@@ -1,0 +1,358 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "flatJsonSchema": {
+    "description": "Flat JSON string array scheme used in jsonutils::jsonStrToUset",
+    "type": "array",
+    "items": {
+      "type": "string"
+    }
+  },
+  "tickers": {
+    "description": "JSON schema used in jsonutils::jsonStrToUset to retrieve ALL symbols https://api.bitfinex.com/v2/tickers",
+    "type": "object",
+    "properties": {
+      "instrument": {
+        "type": "string"
+      },
+      "bid": {
+        "type": "number"
+      },
+      "bid_size": {
+        "type": "number"
+      },
+      "ask": {
+        "type": "number"
+      },
+      "ask_size": {
+        "type": "number"
+      },
+      "daily_change": {
+        "type": "number"
+      },
+      "daily_change_perc": {
+        "type": "number"
+      },
+      "last_price": {
+        "type": "number"
+      },
+      "volume": {
+        "type": "number"
+      },
+      "high": {
+        "type": "number"
+      },
+      "low": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "bid",
+      "bid_size",
+      "ask",
+      "ask_size",
+      "daily_change",
+      "daily_change_perc",
+      "last_price",
+      "volume",
+      "high",
+      "low"
+    ]
+  },
+
+  "pubticker": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/pubticker/ endpoint",
+    "type": "object",
+    "properties": {
+      "mid": {
+        "type": "string"
+      },
+      "bid": {
+        "type": "string"
+      },
+      "ask": {
+        "type": "string"
+      },
+      "last_price": {
+        "type": "string"
+      },
+      "low": {
+        "type": "string"
+      },
+      "high": {
+        "type": "string"
+      },
+      "volume": {
+        "type": "string"
+      },
+      "timestamp": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "mid",
+      "bid",
+      "ask",
+      "last_price",
+      "low",
+      "high",
+      "volume",
+      "timestamp"
+    ]
+  },
+  "stats": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/stats/ endpoint",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer"
+        },
+        "volume": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "period",
+        "volume"
+      ]
+    }
+  },
+  "lendbook": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/lendbook/ endpoint",
+    "type": "object",
+    "properties": {
+      "bids": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "rate": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "string"
+            },
+            "period": {
+              "type": "integer"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "frr": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rate",
+            "amount",
+            "period",
+            "timestamp",
+            "frr"
+          ]
+        }
+      },
+      "asks": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "rate": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "string"
+            },
+            "period": {
+              "type": "integer"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "frr": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rate",
+            "amount",
+            "period",
+            "timestamp",
+            "frr"
+          ]
+        }
+      }
+    },
+    "required": [
+      "bids",
+      "asks"
+    ]
+  },
+  "book": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/book/ endpoint",
+    "type": "object",
+    "properties": {
+      "bids": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "price": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "price",
+            "amount",
+            "timestamp"
+          ]
+        }
+      },
+      "asks": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "price": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "price",
+            "amount",
+            "timestamp"
+          ]
+        }
+      }
+    },
+    "required": [
+      "bids",
+      "asks"
+    ]
+  },
+  "trades": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/trades/ endpoint",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "integer"
+        },
+        "tid": {
+          "type": "integer"
+        },
+        "price": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "exchange": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "timestamp",
+        "tid",
+        "price",
+        "amount",
+        "exchange",
+        "type"
+      ]
+    }
+  },
+  "lends": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/lends/ endpoint",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "rate": {
+          "type": "string"
+        },
+        "amount_lent": {
+          "type": "string"
+        },
+        "amount_used": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "rate",
+        "amount_lent",
+        "amount_used",
+        "timestamp"
+      ]
+    }
+  },
+  "symbols": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/symbols/ endpoint",
+    "type": "array",
+    "items": {
+      "type": "string"
+    },
+    "uniqueItems": false
+  },
+  "symbols_details": {
+    "description": "JSON schema used in https://api.bitfinex.com/v1/symbols_details/ endpoint",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "pair": {
+          "type": "string"
+        },
+        "price_precision": {
+          "type": "integer"
+        },
+        "initial_margin": {
+          "type": "string"
+        },
+        "minimum_margin": {
+          "type": "string"
+        },
+        "maximum_order_size": {
+          "type": "string"
+        },
+        "minimum_order_size": {
+          "type": "string"
+        },
+        "expiration": {
+          "type": "string"
+        },
+        "margin": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pair",
+        "price_precision",
+        "initial_margin",
+        "minimum_margin",
+        "maximum_order_size",
+        "minimum_order_size",
+        "expiration",
+        "margin"
+      ]
+    }
+  }
+}
