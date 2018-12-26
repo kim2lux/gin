@@ -50,6 +50,10 @@ std::pair<std::string, std::string> instruments[] = {
     std::make_pair("repbtc", "tREPBTC"),
     std::make_pair("ltcbtc", "tLTCBTC"),
     std::make_pair("eosbtc", "tEOSBTC"),
+    std::make_pair("seebtc", "tSEEBTC"),
+    std::make_pair("vetbtc", "tVETBTC"),
+    std::make_pair("dgbbtc", "tDGBBTC"),
+    std::make_pair("funbtc", "tFUNBTC"),
     std::make_pair("xtzbtc", "tXTZBTC")};
 
 instrument getInstr(std::pair<std::string, std::string> &name, bitfinexAPIv2 &bfxAPI,
@@ -98,14 +102,17 @@ int shortPosition(instrument &i)
         if (isMacdReducing(i, true))
         {
             i.shortOrder();
-            i.orderId = 0;
-            i.orderPrice = 0;
             return (0);
         }
         else
         {
             std::cout << "MACD: Price still increasing" << std::endl;
         }
+    }
+    else if (i.orderPrice * 0.93 > last.close) {
+        std::cout << "Price decreasing too much: shorting position" << std::endl;
+        i.shortOrder();
+        return (0);
     }
     else
     {
@@ -281,29 +288,48 @@ int main(int argc, char *argv[])
         for (auto &instr : vInstr)
         {
             sleep(2);
-            instr.updateCandles(false, nullptr);
-            if (instr._candles.size() != 100)
+            try
             {
-                std::cout << "Candles not loaded !" << std::endl;
-                std::cout << bfxAPI.strResponse() << std::endl;
-                sleep(20);
-                break;
-            }
-            instr.updateRsi();
-            instr.updateMacd();
-            instr.display();
-            if (instr.orderId == 0)
-                makePosition(instr, w);
-            else
-            {
-                while (shortPosition(instr) != 0)
+                instr.updateCandles(false, nullptr);
+                if (instr._candles.size() != 100)
                 {
-                    sleep(2);
-                    instr.updateRsi();
-                    instr.updateMacd();
-                    instr.display();
+                    std::cout << "Candles not loaded !" << std::endl;
+                    std::cout << bfxAPI.strResponse() << std::endl;
+                    sleep(10);
+                    break;
                 }
-                exit(0);
+                instr.updateRsi();
+                instr.updateMacd();
+                instr.display();
+                if (instr.orderId == 0)
+                    makePosition(instr, w);
+                else
+                {
+                    int i = 0;
+                    while (i < 5 && shortPosition(instr) != 0)
+                    {
+                        sleep(2);
+                        instr.updateRsi();
+                        instr.updateMacd();
+                        instr.display();
+                        i++;
+                    }
+                }
+            }
+            catch (const std::runtime_error &re)
+            {
+                std::cerr << "Runtime error: " << re.what() << std::endl;
+            }
+            catch (const std::exception &ex)
+            {
+                // speciffic handling for all exceptions extending std::exception, except
+                // std::runtime_error which is handled explicitly
+                std::cerr << "Error occurred: " << ex.what() << std::endl;
+            }
+            catch (...)
+            {
+                // catch any other errors (that we have no information about)
+                std::cerr << "Unknown failure occurred. Possible memory corruption" << std::endl;
             }
         }
     }

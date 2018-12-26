@@ -3,6 +3,20 @@
 #include "config.h"
 #include <iostream>
 #include <iomanip>
+#include <fstream>
+#include <time.h>
+
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+    return buf;
+}
 
 void instrument::updateCandles(bool replay, const char *filepath)
 {
@@ -31,7 +45,8 @@ void instrument::makeOrder(double totalBuy)
                     false,
                     false,
                     0);
-    if (_apiv1.hasApiError() != 0) {
+    if (_apiv1.hasApiError() != 0)
+    {
         std::cout << "Error making the order" << std::endl;
         std::cout << _apiv1.strResponse() << std::endl;
         return;
@@ -49,6 +64,16 @@ void instrument::makeOrder(double totalBuy)
     this->position = true;
 
     std::cout << _apiv1.strResponse() << std::endl;
+
+    std::ofstream file;
+    file.open("orders.txt", std::ios::out | std::ios::app);
+    if (file.fail())
+        throw std::ios_base::failure(std::strerror(errno));
+
+    //make sure write fails with exception if something is wrong
+    file.exceptions(file.exceptions() | std::ios::failbit | std::ifstream::badbit);
+
+    file << currentDateTime() << " - New order: " << _apiv1.strResponse().c_str() << std::endl;
 }
 
 void instrument::shortOrder()
@@ -76,6 +101,16 @@ void instrument::shortOrder()
     orderSize = 0;
 
     std::cout << _apiv1.strResponse() << std::endl;
+
+    std::ofstream file;
+    file.open("orders.txt", std::ios::out | std::ios::app);
+    if (file.fail())
+        throw std::ios_base::failure(std::strerror(errno));
+
+    //make sure write fails with exception if something is wrong
+    file.exceptions(file.exceptions() | std::ios::failbit | std::ifstream::badbit);
+
+    file << currentDateTime() << " - Sell order: " << _apiv1.strResponse().c_str() << std::endl;
 }
 
 void instrument::display()
