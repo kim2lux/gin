@@ -14,6 +14,9 @@ public:
     _v1name(v1name), _v2name(v2name), _bfx(bfx), _apiv1(v1), _icandle(iCandle)  {
         orderId = 0;
         orderPrice = 0;
+        orderSize = 0;
+        originalAmount = 0;
+        executedAmount = 0;
     }
 
     std::list<candle>   _candles;
@@ -24,16 +27,18 @@ public:
     BfxAPI::BitfinexAPI & _apiv1;
     candleInterface & _icandle;
     void updateRsi();
-    void updateCandles();
+    void updateCandles(bool replay = false, const char * filepath = nullptr);
     void updateMacd();
     void display();
     void makeOrder(double);
     void shortOrder();
 
-
-    double orderId;
+    bool position = false;
+    int64_t orderId;
     double orderPrice;
     double orderSize;
+    double originalAmount;
+    double executedAmount;
 
 private:
 

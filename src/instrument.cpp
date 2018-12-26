@@ -4,94 +4,76 @@
 #include <iostream>
 #include <iomanip>
 
-void instrument::updateCandles()
+void instrument::updateCandles(bool replay, const char *filepath)
 {
     _candles.clear();
-    _candles = std::move(_icandle.retrieveCandles(*this));
-}
-
-void instrument::updateRsi()
-{
-    std::array<double, NB_CANDLES> arr_x;
-    int size = 0;
-    for (candle &i : _candles)
+    if (replay == true)
     {
-        arr_x[size] = i.close;
-        size++;
+        _candles = std::move(_icandle.retrieveCandles(*this, filepath));
     }
-
-    TI_REAL *inputs[] = {arr_x.data()};
-    TI_REAL options[] = {20};
-    TI_REAL *outputs[1];
-
-    const int out_size = NB_CANDLES - ti_rsi_start(options);
-
-    outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
-    assert(outputs[0] != 0);
-    const int ret = ti_rsi(NB_CANDLES, inputs, options, outputs);
-
-    auto i = _candles.begin();
-    auto end = _candles.end();
-    uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
-    while (i != end)
+    else
     {
-        i->rsi = outputs[0][x];
-        i++;
-        x++;
+        _candles = std::move(_icandle.retrieveCandles(*this));
     }
-
-    assert(ret == TI_OKAY);
 }
 
 void instrument::makeOrder(double totalBuy)
 {
-    const candle & last = _candles.back();
-    std::cout << "New order: Price" << 
-    last.close << " size " << totalBuy << std::endl;
+    const candle &last = _candles.back();
+    std::cout << "New order: Price" << last.close << " size " << totalBuy << std::endl;
     _apiv1.newOrder(this->_v1name,
-                      totalBuy,
-                      last.close / 2,
-                      "buy",
-                      "exchange limit",
-                      false,
-                      true,
-                      false,
-                      false,
-                      0);
+                    totalBuy * 1.0,
+                    last.close / 2,
+                    "buy",
+                    "exchange limit",
+                    false,
+                    true,
+                    false,
+                    false,
+                    0);
+    if (_apiv1.hasApiError() != 0) {
+        std::cout << "Error making the order" << std::endl;
+        std::cout << _apiv1.strResponse() << std::endl;
+        return;
+    }
     Document document;
     document.Parse(_apiv1.strResponse().c_str());
     Value &data = document;
-    std::cout << "orderId" <<  data[0].GetDouble() << std::endl;
-    
-    this->orderId = data[0].GetDouble();
+    std::cout << "orderId" << data["id"].GetInt64() << std::endl;
+
+    this->orderId = data["id"].GetInt64();
+    this->originalAmount = atof(data["original_amount"].GetString());
+    this->executedAmount = atof(data["executed_amount"].GetString());
     this->orderPrice = last.close;
     this->orderSize = totalBuy;
+    this->position = true;
 
     std::cout << _apiv1.strResponse() << std::endl;
 }
 
-void instrument::shortOrder() {
-    const candle & last = _candles.back();
+void instrument::shortOrder()
+{
+    const candle &last = _candles.back();
     std::cout << "selling: orderId : " << this->orderId
-    << " buy price : " << this->orderPrice
-    << " total size: " << this->orderSize
-    << " at Price: " << last.close;
+              << " buy price : " << this->orderPrice
+              << " total size: " << this->orderSize
+              << " at Price: " << last.close;
     _apiv1.newOrder(this->_v1name,
-                      this->orderSize,
-                      last.close * 2,
-                      "sell",
-                      "exchange limit",
-                      false,
-                      true,
-                      false,
-                      false,
-                      0);
+                    this->orderSize,
+                    last.close,
+                    "sell",
+                    "exchange market",
+                    false,
+                    true,
+                    false,
+                    false,
+                    0);
     Document document;
     document.Parse(_apiv1.strResponse().c_str());
-    Value &data = document;
-    std::cout << "orderId" <<  data[0].GetDouble() << std::endl;
-    orderId = data[0].GetDouble();
+    position = false;
+    orderId = 0;
+    orderPrice = 0;
+    orderSize = 0;
 
     std::cout << _apiv1.strResponse() << std::endl;
 }
@@ -106,7 +88,8 @@ void instrument::display()
         std::cout
             << std::setprecision(12) << std::fixed
             << "Instrument: " << _v1name << " rsi: " << i.rsi
-            << std::endl << " close: " << i.close << " rsi: " << i.rsi
+            << std::endl
+            << " close: " << i.close << " rsi: " << i.rsi
             << " macd: " << i.macd
             << " macd_signal: " << i.macdSignal
             << " macd_histo: " << i.macdHistogram
@@ -156,5 +139,39 @@ void instrument::updateMacd()
         i++;
         x++;
     }
+    assert(ret == TI_OKAY);
+}
+
+void instrument::updateRsi()
+{
+    std::array<double, NB_CANDLES> arr_x;
+    int size = 0;
+    for (candle &i : _candles)
+    {
+        arr_x[size] = i.close;
+        size++;
+    }
+
+    TI_REAL *inputs[] = {arr_x.data()};
+    TI_REAL options[] = {20};
+    TI_REAL *outputs[1];
+
+    const int out_size = NB_CANDLES - ti_rsi_start(options);
+
+    outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
+    assert(outputs[0] != 0);
+    const int ret = ti_rsi(NB_CANDLES, inputs, options, outputs);
+
+    auto i = _candles.begin();
+    auto end = _candles.end();
+    uint32_t x = 0;
+    std::advance(i, NB_CANDLES - out_size);
+    while (i != end)
+    {
+        i->rsi = outputs[0][x];
+        i++;
+        x++;
+    }
+
     assert(ret == TI_OKAY);
 }

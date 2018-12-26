@@ -40,7 +40,7 @@ public:
   candleInterface(std::string time, bitfinexAPIv2 &bfxApi) : _time(time), _bfxApi(bfxApi)
   {
   }
-  std::list<candle> retrieveCandles(instrument &instr);
+  std::list<candle> retrieveCandles(instrument &instr, const char *filepath = nullptr);
   std::list<candle> pushCandles(std::string json);
   bool getLastCandle(instrument &instr);
 
