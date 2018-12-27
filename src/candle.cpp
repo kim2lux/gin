@@ -11,18 +11,19 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <error.h>
-
 using namespace rapidjson;
 
 extern const std::string candleGapTime;
 extern const std::string candleNumber;
+extern std::pair<std::string, std::string> instruments[];
 
-void save(std::string json, std::string &name)
+CandleInterface::CandleInterface(bitfinexAPIv2 &bfxApi) : _bfxApi(bfxApi)
 {
-    if (mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH))
-    {
-        std::cout << "hm" << std::endl;
-    }
+}
+
+void CandleInterface::save(std::string json, std::string &name)
+{
+    mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
     time_t t = std::time(0);
     long int now = static_cast<long int>(t);
     Document document;
@@ -36,7 +37,7 @@ void save(std::string json, std::string &name)
     fclose(fp);
 }
 
-std::list<candle> candleInterface::pushCandles(std::string json)
+std::list<candle> CandleInterface::pushCandles(std::string json)
 {
     Document document;
     document.Parse(json.c_str());
@@ -56,15 +57,15 @@ std::list<candle> candleInterface::pushCandles(std::string json)
     return candles;
 }
 
-std::list<candle> candleInterface::retrieveCandles(instrument &instr, const char *filepath)
+std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char *filepath)
 {
     if (filepath != nullptr)
     {
         FILE *fp = fopen(filepath, "r"); // non-Windows use "r"
-        if (fp == nullptr) 
+        if (fp == nullptr)
         {
             std::cout << "Error opening file" << std::endl;
-            exit (-1);
+            exit(-1);
         }
         char readBuffer[65536];
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -82,7 +83,7 @@ std::list<candle> candleInterface::retrieveCandles(instrument &instr, const char
     }
 }
 
-void addLastCandle(instrument &instr, std::string json)
+void addLastCandle(Instrument &instr, std::string json)
 {
     //std::cout << json << std::endl;
     Document document;
@@ -101,7 +102,7 @@ void addLastCandle(instrument &instr, std::string json)
     std::cout << "New Candle : Open price " << data[1].GetDouble() << "Close price " << data[2].GetDouble();
 }
 
-bool candleInterface::getLastCandle(instrument &instr)
+bool CandleInterface::getLastCandle(Instrument &instr)
 {
     std::string request("/candles/trade:" + candleGapTime + ":" + instr._v2name + "/last");
     _bfxApi.Request.get(request);

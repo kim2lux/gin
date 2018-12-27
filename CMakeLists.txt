@@ -1,6 +1,6 @@
 ################################################################################
 
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.5)
 project (example)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -28,7 +28,7 @@ target_link_libraries(bfxapicpp INTERFACE rapidjson)
 
 set ( LIB_TRADING libindicators.a )
 link_directories(~/workspace/gintrade/bfx-cpp-api/app/lib)
-add_executable (example src/example.cpp src/candle.cpp src/instrument.cpp)
+add_executable (example src/example.cpp src/candle.cpp src/instrument.cpp src/engine.cpp src/wallet.cpp src/config.cpp src/calculate.cpp src/position.cpp)
 target_include_directories (example PRIVATE include)
 target_include_directories (example PUBLIC "tulipindicators-0.8.0")
 

@@ -4,10 +4,12 @@
 #include <stdint.h>
 #include <iostream>
 
+#include <list>
+
 #include "bfxApiV2.hpp"
 using namespace BfxAPI;
 
-class instrument;
+class Instrument;
 
 struct candle
 {
@@ -31,21 +33,14 @@ struct candle
   double macd;
 };
 
-namespace BfxAPI
-{
-
-class candleInterface
+class CandleInterface
 {
 public:
-  candleInterface(std::string time, bitfinexAPIv2 &bfxApi) : _time(time), _bfxApi(bfxApi)
-  {
-  }
-  std::list<candle> retrieveCandles(instrument &instr, const char *filepath = nullptr);
+  CandleInterface(bitfinexAPIv2 &bfxApi);
+  std::list<candle> retrieveCandles(Instrument &instr, const char *filepath = nullptr);
   std::list<candle> pushCandles(std::string json);
-  bool getLastCandle(instrument &instr);
+  void save(std::string json, std::string &name);
+  bool getLastCandle(Instrument &instr);
 
-  const std::string &_time;
   bitfinexAPIv2 &_bfxApi;
 };
-
-} // namespace BfxAPI
