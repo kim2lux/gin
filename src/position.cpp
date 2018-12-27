@@ -8,7 +8,7 @@ int Position::makeOrder(Instrument & instr, double totalBuy)
     std::cout << "New order: Price" << last.close << " size " << totalBuy << std::endl;
     _v1.newOrder(instr._v1name,
                     totalBuy * 1.0,
-                    last.close,
+                    last.close / 2,
                     "buy",
                     "exchange limit",
                     false,
@@ -82,7 +82,7 @@ int Position::makePosition(Instrument &i, Wallet & _wallet)
     const candle &last = i._candles.back();
     double unitPrice = last.close * _wallet.lastPrice;
 
-    double totalBuy = 18 / unitPrice;
+    double totalBuy = 20 / unitPrice;
 
     std::cout << "Value to buy: " << totalBuy << std::endl;
     std::cout << "Price to buy: " << totalBuy * unitPrice << std::endl;

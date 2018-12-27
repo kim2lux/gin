@@ -6,6 +6,8 @@
 #include <fstream>
 #include <time.h>
 
+void logPosition(std::string &&str);
+
 Instrument::Instrument(std::string v1name, std::string v2name, BfxAPI::bitfinexAPIv2 &bfx, BfxAPI::BitfinexAPI &v1, CandleInterface &iCandle) : _v1name(v1name), _v2name(v2name), _bfx(bfx), _apiv1(v1), _icandle(iCandle)
 {
     orderId = 0;
@@ -28,19 +30,27 @@ void Instrument::updateCandles(bool replay, const char *filepath)
     }
 }
 
-void Instrument::setOrder(std::string response, const candle & last, double totalBuy)
+void Instrument::setOrder(std::string response, const candle &last, double totalBuy)
 {
     Document document;
     document.Parse(response.c_str());
     Value &data = document;
-    std::cout << "orderId" << data["id"].GetInt64() << std::endl;
 
-    orderId = data["id"].GetInt64();
-    originalAmount = atof(data["original_amount"].GetString());
-    executedAmount = atof(data["executed_amount"].GetString());
-    orderPrice = last.close;
-    orderSize = totalBuy;
-    position = true;
+    if (data.HasMember("message"))
+    {
+        logPosition(std::string("New order error: ") + response);
+    }
+    else
+    {
+        std::cout << "orderId" << data["id"].GetInt64() << std::endl;
+
+        orderId = data["id"].GetInt64();
+        originalAmount = atof(data["original_amount"].GetString());
+        executedAmount = atof(data["executed_amount"].GetString());
+        orderPrice = last.close;
+        orderSize = totalBuy;
+        position = true;
+    }
 }
 
 void Instrument::clearOrder()

@@ -23,13 +23,15 @@ int Config::init(int argc, char **argv)
         if (argc == 4)
         {
             simuMode = true;
+            replaySymbolV1 = argv[2];
+            replaySymbolV2 = argv[3];
             std::cout << "replaying instr: " << argv[2] << argv[3] << std::endl;
         }
         else if (argc != 1)
         {
+            simuMode = false;
             std::cout << "Command line error" << std::endl;
         }
     }
-    simuMode = false;
     return (0);
 }
