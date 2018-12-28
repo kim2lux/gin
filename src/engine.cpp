@@ -151,7 +151,14 @@ Engine::Engine(Config &config) : _config(config), _api(config), _position(_api.v
     }
     else
     {
-        std::pair<std::string, std::string> p = std::make_pair(_config.replaySymbolV1, _config.replaySymbolV1);
-        vInstr.push_back(std::move(getInstr(p, _api.v2, _api.v1, _candleInterface)));
+        for (auto &p : instruments)
+        {
+            if (p.first == _config.replaySymbolV1)
+                vInstr.push_back(std::move(getInstr(p, _api.v2, _api.v1, _candleInterface)));
+        }
+        if (vInstr.size() == 0)
+        {
+            std::cout << "No instrument loaded !" << std::endl; exit (-1);
+        }
     }
 }
