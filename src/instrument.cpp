@@ -65,8 +65,6 @@ void Instrument::clearOrder()
 
 void Instrument::display()
 {
-    //    candle & i =
-
     std::setprecision(9);
     candle &i = _candles.back();
     {

@@ -1,25 +1,26 @@
 #include "position.h"
 
-void logPosition(std::string && str);
+void logPosition(std::string &&str);
 
-int Position::makeOrder(Instrument & instr, double totalBuy)
+int Position::makeOrder(Instrument &instr, double totalBuy)
 {
     const candle &last = instr._candles.back();
     std::cout << "New order: Price" << last.close << " size " << totalBuy << std::endl;
     _v1.newOrder(instr._v1name,
-                    totalBuy * 1.0,
-                    last.close / 2,
-                    "buy",
-                    "exchange limit",
-                    false,
-                    true,
-                    false,
-                    false,
-                    0);
+                 totalBuy * 1.0,
+                 last.close / 2,
+                 "buy",
+                 "exchange limit",
+                 false,
+                 true,
+                 false,
+                 false,
+                 0);
     if (_v1.hasApiError() != 0)
     {
         std::cout << "Error making the order" << std::endl;
         std::cout << _v1.strResponse() << std::endl;
+        logPosition(std::string(" - ERROR: Buy order: ") + _v1.strResponse());
         return (-1);
     }
 
@@ -29,24 +30,25 @@ int Position::makeOrder(Instrument & instr, double totalBuy)
     return (0);
 }
 
-int Position::shortOrder(Instrument & instr)
+int Position::shortOrder(Instrument &instr)
 {
     const candle &last = instr._candles.back();
     std::cout << "selling: orderId : " << instr.orderId << " buy price : " << instr.orderPrice << " Amount size: " << instr.executedAmount << " at Price: " << last.close;
     _v1.newOrder(instr._v1name,
-                    instr.executedAmount,
-                    last.close,
-                    "sell",
-                    "exchange market",
-                    false,
-                    true,
-                    false,
-                    false,
-                    0);
+                 instr.executedAmount,
+                 last.close,
+                 "sell",
+                 "exchange market",
+                 false,
+                 true,
+                 false,
+                 false,
+                 0);
     if (_v1.hasApiError() != 0)
     {
         std::cout << "Error making the order" << std::endl;
         std::cout << _v1.strResponse() << std::endl;
+        logPosition(std::string(" - ERROR: Sell order: ") + _v1.strResponse());
         return (-1);
     }
     Document document;
@@ -77,7 +79,7 @@ int Position::isMacdReducing(Instrument &i, bool sell = false)
     return -1;
 }
 
-int Position::makePosition(Instrument &i, Wallet & _wallet)
+int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false)
 {
     const candle &last = i._candles.back();
     double unitPrice = last.close * _wallet.lastPrice;
@@ -92,7 +94,16 @@ int Position::makePosition(Instrument &i, Wallet & _wallet)
         if (isMacdReducing(i, false) == 0)
         {
             std::cout << "Buying position" << std::endl;
-            makeOrder(i, totalBuy);
+            if (simu == false)
+            {
+                makeOrder(i, totalBuy);
+            }
+            else
+            {
+                logPosition(std::string("New Simu order: " + i._v1name + " Qty: " + std::to_string(totalBuy) + " Price: " + std::to_string(last.close)));
+                i.orderId = 0xff;
+                i.orderPrice = last.close;
+            }
         }
         else
         {
@@ -106,7 +117,7 @@ int Position::makePosition(Instrument &i, Wallet & _wallet)
     return (0);
 }
 
-int Position::shortPosition(Instrument &i)
+int Position::shortPosition(Instrument &i, bool simu = false)
 {
     const candle &last = i._candles.back();
     std::cout << " trying to sell: " << i._v1name << std::endl;
@@ -121,7 +132,19 @@ int Position::shortPosition(Instrument &i)
         std::cout << "RSI high" << std::endl;
         if (isMacdReducing(i, true))
         {
-            shortOrder(i);
+            if (simu == false)
+            {
+                shortOrder(i);
+            }
+            else
+            {
+                double diff = last.close - i.orderPrice;
+                logPosition(std::string("Sell Simu order: " + i._v1name
+                                        + " Price: " + std::to_string(last.close)
+                                        + " Diff: " + std::to_string(diff)));
+                i.orderId = 0;
+                i.orderPrice = 0;
+            }
             return (0);
         }
         else
@@ -129,7 +152,8 @@ int Position::shortPosition(Instrument &i)
             std::cout << "MACD: Price still increasing" << std::endl;
         }
     }
-    else if (i.orderPrice * 0.93 > last.close) {
+    else if (i.orderPrice * 0.93 > last.close)
+    {
         std::cout << "Price decreasing too much: shorting position" << std::endl;
         shortOrder(i);
         return (0);

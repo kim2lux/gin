@@ -32,5 +32,4 @@ class Instrument
     double originalAmount;
     double executedAmount;
 
-  private:
 };

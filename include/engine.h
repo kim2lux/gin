@@ -33,6 +33,11 @@ public:
   CandleInterface _candleInterface;
   std::vector<Instrument> vInstr;
   Wallet _wallet;
+  std::vector<std::string> _simuCandles;
+
   void run();
+  int updateInstrument(Instrument &instr);
+  int initSimuCandles(Instrument &instr);
+  int makeOrders(Instrument &instr);
 
 };
