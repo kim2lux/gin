@@ -1,7 +1,6 @@
 #pragma once
 
 #include "bfxConf.hpp"
-
 namespace BfxAPI
 {
 
@@ -15,18 +14,19 @@ class bitfinexAPIv2 : public BfxConf
 
     bool check()
     {
-        if (!hasApiError()) {
+        if (!hasApiError())
+        {
             cerr << strResponse() << endl;
             return true;
         }
         else
         {
             // see bfxERR enum in BitfinexAPI.hpp::BitfinexAPI
-//            cerr << "BfxApiStatusCode: ";
-  //          cerr << getBfxApiStatusCode() << endl;
+            //            cerr << "BfxApiStatusCode: ";
+            //          cerr << getBfxApiStatusCode() << endl;
             // see https://curl.haxx.se/libcurl/c/libcurl-errors.html
-      //      cerr << "CurlStatusCode: ";
-    //        cerr << getCurlStatusCode() << endl;
+            //      cerr << "CurlStatusCode: ";
+            //        cerr << getCurlStatusCode() << endl;
             return false;
         }
     }
@@ -35,11 +35,20 @@ class bitfinexAPIv2 : public BfxConf
     {
         Request.get("/platform/status");
         if (check() == false)
-            exit (0);
+            exit(0);
         Document document;
         document.Parse(strResponse().c_str());
         Value &data = document;
         return data[0].GetInt();
     }
+    static string getTonce() noexcept
+    {
+        using namespace std::chrono;
+
+        milliseconds ms =
+            duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+
+        return to_string(ms.count());
+    };
 };
 } // namespace BfxAPI

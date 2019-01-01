@@ -19,7 +19,6 @@
 #include "config.h"
 #include "engine.h"
 
-
 // namespaces
 using std::cerr;
 using std::cout;
@@ -33,9 +32,13 @@ extern std::pair<std::string, std::string> instruments[];
 int main(int argc, char *argv[])
 {
     Config config(argc, argv);
-    Engine engine(config);
+    while (true)
+    {
+        std::cout << "starting program" << std::endl;
+        Engine engine(config);
 
-    engine.run();
+        engine.run();
+    }
 
     return 0;
 }

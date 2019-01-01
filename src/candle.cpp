@@ -17,11 +17,11 @@ extern const std::string candleGapTime;
 extern const std::string candleNumber;
 extern std::pair<std::string, std::string> instruments[];
 
-CandleInterface::CandleInterface(bitfinexAPIv2 &bfxApi) : _bfxApi(bfxApi)
+CandleInterface::CandleInterface(BfxAPI::bitfinexAPIv2 &bfxApi) : _bfxApi(bfxApi)
 {
 }
 
-void CandleInterface::save(std::string json, std::string &name)
+void CandleInterface::save(std::string json, std::string name)
 {
     mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
     time_t t = std::time(0);
@@ -78,6 +78,9 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
         std::string request("/candles/trade:" + candleGapTime + ":" + instr._v2name + "/hist?limit=" + candleNumber + "&sort=1");
         //std::cout << "request => " << request << std::endl;
         _bfxApi.Request.get(request);
+        if (_bfxApi.Request.getLastStatusCode() != CURLE_OK) {
+            return (std::list<candle>());
+        }
         save(_bfxApi.strResponse(), instr._v1name);
         return (pushCandles(_bfxApi.strResponse()));
     }

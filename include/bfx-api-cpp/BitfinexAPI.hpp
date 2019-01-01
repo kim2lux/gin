@@ -55,7 +55,7 @@ namespace BfxAPI
         BfxConf(API_URL, WITHDRAWAL_CONF_FILE_PATH, noError, accessKey, secretKey)
         {
             // populate _symbols directly from Bitfinex getSymbols endpoint
-            std::cout << getSymbols().strResponse() << std::endl;
+            //std::cout << getSymbols().strResponse() << std::endl;
             jsonutils::jsonStrToUset(symbols_, getSymbols().strResponse());
 
             currencies_ =

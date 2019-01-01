@@ -5,7 +5,8 @@
 
 class Calculate
 {
-  public:
-    void updateMacd(Instrument &instr);
-    void updateRsi(Instrument &instr);
+public:
+  void updateHma(Instrument &instr);
+  void updateMacd(Instrument &instr);
+  void updateRsi(Instrument &instr);
 };

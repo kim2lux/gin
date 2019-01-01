@@ -29,11 +29,11 @@ void logPosition(std::string &&str)
     file << currentDateTime() << " - " << str.c_str() << std::endl;
 }
 
-Instrument getInstr(std::pair<std::string, std::string> &name, bitfinexAPIv2 &bfxAPI,
-                    BfxAPI::BitfinexAPI &v1, CandleInterface &iCandle)
+Instrument getInstr(std::pair<std::string, std::string> &name, BfxAPI::bitfinexAPIv2 &bfxAPI,
+                    BfxAPI::BitfinexAPI &v1, CandleInterface &iCandle, std::string &jsonOrders)
 {
 
-    Instrument instr(name.first, name.second, bfxAPI, v1, iCandle);
+    Instrument instr(name.first, name.second, bfxAPI, v1, iCandle, jsonOrders);
     return instr;
 }
 
@@ -59,18 +59,49 @@ int Engine::initSimuCandles(Instrument &instr)
     return (0);
 }
 
+int Engine::loadInstrument()
+{
+    if (_config.simuMode == false)
+    {
+        //_api.v1.getActiveOrders();
+        for (auto &i : instruments)
+        {
+            vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
+        }
+    }
+    else
+    {
+        std::string order;
+        for (auto &p : instruments)
+        {
+            if (p.first == _config.replaySymbolV1)
+                vInstr.push_back({p.first, p.second, _api.v2, _api.v1, _candleInterface, order});
+        }
+    }
+    if (vInstr.size() == 0)
+    {
+        std::cout << "No instrument loaded !" << std::endl;
+        return (-1);
+    }
+    return (0);
+}
+
 int Engine::makeOrders(Instrument &instr)
 {
     if (instr._candles.size() != 100)
     {
         std::cout << "Candles not loaded !" << std::endl;
-        std::cout << _api.v2.strResponse() << std::endl;
         if (_config.simuMode == false)
-            sleep(10);
+        {
+            std::cout << _api.v2.strResponse() << std::endl;
+            if (_config.simuMode == false)
+                sleep(10);
+        }
         return (-1);
     }
     _calc.updateRsi(instr);
     _calc.updateMacd(instr);
+    _calc.updateHma(instr);
     instr.display();
     if (instr.orderId == 0)
         _position.makePosition(instr, _wallet, _config.simuMode);
@@ -87,7 +118,7 @@ int Engine::updateInstrument(Instrument &instr)
     {
         sleep(2);
         instr.updateCandles(false, nullptr);
-        this->makeOrders(instr);
+        return (this->makeOrders(instr));
     }
     else
     {
@@ -106,12 +137,18 @@ void Engine::run()
 {
     while (true)
     {
+        if (_config.simuMode == false)
+        {
+            _api.v1.getActiveOrders();
+            std::cout << "orders update: " << _api.v1.strResponse() << std::endl;
+        }
         for (auto &instr : vInstr)
         {
             try
             {
+                instr.initOrder(_api.v1.strResponse());
                 if (updateInstrument(instr) != 0)
-                    break;
+                    return;
             }
             catch (const std::runtime_error &re)
             {
@@ -132,33 +169,20 @@ void Engine::run()
 
 Engine::Engine(Config &config) : _config(config), _api(config), _position(_api.v1), _candleInterface(_api.v2)
 {
-    if (_wallet.update(_api.v1) != 0)
-    {
-        std::cout << "Cannot initialize wallet" << std::endl;
-    }
     if (_api.v2.getStatus() == 0)
     {
         std::cout << "Bitfinex server in maintenance" << std::endl;
         exit(0);
     }
-    if (_config.simuMode == false)
-    {
 
-        for (auto &i : instruments)
-        {
-            vInstr.push_back(std::move(getInstr(i, _api.v2, _api.v1, _candleInterface)));
-        }
-    }
-    else
+    if (_wallet.update(_api.v1) != 0)
     {
-        for (auto &p : instruments)
-        {
-            if (p.first == _config.replaySymbolV1)
-                vInstr.push_back(std::move(getInstr(p, _api.v2, _api.v1, _candleInterface)));
-        }
-        if (vInstr.size() == 0)
-        {
-            std::cout << "No instrument loaded !" << std::endl; exit (-1);
-        }
+        std::cout << "Cannot initialize wallet" << std::endl;
+        exit(0);
+    }
+    if (loadInstrument() != 0)
+    {
+        std::cout << "Cannot initialize instrument" << std::endl;
+        exit(0);
     }
 }
