@@ -101,15 +101,16 @@ void Instrument::display()
 {
     std::setprecision(9);
     candle &i = _candles.back();
+    time_t a = i.timestamp / 1000;
     {
         std::cout
-            << std::setprecision(12) << std::fixed
-            << "Instrument: " << _v1name << " rsi: " << i.rsi
-            << " close: " << i.close << std::endl
-            << " macd: " << i.macd << std::endl
-            << " macd_signal: " << i.macdSignal << std::endl
-            << " macd_histo: " << i.macdHistogram << std::endl
-            << " hma: " << i.hma << std::endl
+            << std::setprecision(12) << std::fixed << "Timestamp: " << ctime(&a)
+            << " Instrument: " << _v1name << " rsi: " << i.rsi
+            << " Close: " << i.close << std::endl
+            << " Macd: " << i.macd << std::endl
+            << " Macd_signal: " << i.macdSignal << std::endl
+            << " Macd_histo: " << i.macdHistogram << std::endl
+            << " Hma: " << i.hma << std::endl
             << std::endl;
     }
 }

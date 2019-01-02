@@ -99,16 +99,18 @@ int Engine::makeOrders(Instrument &instr)
         }
         return (-1);
     }
+    std::cout << " ****************** " << std::endl;
+    instr.display();
     _calc.updateRsi(instr);
     _calc.updateMacd(instr);
     _calc.updateHma(instr);
-    instr.display();
     if (instr.orderId == 0)
         _position.makePosition(instr, _wallet, _config.simuMode);
     else
     {
         _position.shortPosition(instr, _config.simuMode);
     }
+    std::cout << " ****************** " << std::endl;
     return (0);
 }
 

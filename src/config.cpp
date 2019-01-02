@@ -23,6 +23,7 @@ int Config::init(int argc, char **argv)
         simuMode = true;
         replaySymbolV1 = argv[2];
         std::cout << "replaying instr: " << argv[2] << std::endl;
+        return (0);
     }
     else if (argc != 1)
     {

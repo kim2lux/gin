@@ -72,8 +72,9 @@ int Position::isMacdReducing(const candle &last, const candle &prelast, bool sel
         std::cout << "Macd reducing - Past: " << prelast.macdHistogram << " Current: " << last.macdHistogram << std::endl;
         return (0);
     }
-    else if (sell == true && prelast.macdHistogram > last.macdHistogram)
+    else if (sell == true &&  prelast.macdHistogram > last.macdHistogram)
     {
+        std::cout << "Macd reducing - Past: " << prelast.macdHistogram << " Current: " << last.macdHistogram << std::endl;
         return (0);
     }
     return -1;
@@ -123,24 +124,28 @@ int Position::shortPosition(Instrument &i, bool simu = false)
     const candle &last = i._candles.back();
     i._candles.pop_back();
     const candle &prelast = i._candles.back();
+
     std::cout << " trying to sell: " << i._v1name << std::endl;
     std::cout << " OrderID: " << i.orderId << std::endl;
     std::cout << " OrderPrice: " << i.orderPrice << std::endl;
-    std::cout << " OrderSize: " << i.orderSize << std::endl;
-    std::cout << " Orig Available: " << i.executedAmount << std::endl;
-    if (last.rsi > 65)
+    std::cout << " OrderSize: " << i.orderSize << std::endl << std::endl;
+
+    std::cout << " Diff HMA: " << last.hma - prelast.hma << std::endl;
+    std::cout << " Diff MACD: " << last.macdHistogram - prelast.macdHistogram << std::endl;
+    if (last.rsi > 50)
     {
-        logPosition(std::string(" - RSI High but no sell : " + i._v1name + " Current Price: " + std::to_string(last.close)));
         std::cout << "RSI high" << std::endl;
-        if (isMacdReducing(last, prelast, true) && prelast.hma >= last.hma)
+        if (isMacdReducing(last, prelast, true) == 0 && prelast.hma >= last.hma)
         {
+            logPosition(std::string(" - Sell : " + i._v1name + " Current Price: " + std::to_string(last.close) + " Order Price: " + std::to_string(i.orderPrice)));
+            std::cout << "DEBUG" << std::endl;
+
             if (simu == false)
             {
                 shortOrder(i);
             }
             else
             {
-                
                 i.orderId = 0;
                 i.orderPrice = 0;
             }
@@ -153,6 +158,7 @@ int Position::shortPosition(Instrument &i, bool simu = false)
     }
     else if (i.orderPrice * 0.93 > last.close)
     {
+        logPosition(std::string(" - Sell Price decreasing too much 7%: shorting position : " + i._v1name + " Current Price: " + std::to_string(last.close) + " Order Price: " + std::to_string(i.orderPrice)));
         std::cout << "Price decreasing too much 7%: shorting position" << std::endl;
         shortOrder(i);
         return (0);
