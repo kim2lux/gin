@@ -33,7 +33,8 @@
 #include <cryptopp/hex.h>
 #include <cryptopp/hmac.h>
 #include <cryptopp/osrng.h>
-
+#include <iostream>
+#include <string>
 using std::string;
 using std::map;
 
@@ -102,6 +103,7 @@ namespace BfxAPI {
 
       string post(string inPath, string json = "") {
         response = "";
+       
         if (curlPOST) {
           path = inPath;
           string url = endpoint + path;
@@ -111,6 +113,7 @@ namespace BfxAPI {
           if (accessKey != "") {
             header["X-BFX-APIKEY"] = accessKey;
           }
+            header["X-BFX-NONCE"] = getTonce();
 
           if (secretKey != "") {
             header["X-BFX-SIGNATURE"] = getSignature(payload);
@@ -185,7 +188,15 @@ namespace BfxAPI {
       void setHeader(map<string, string> inHeader) {
         header = inHeader;
       }
+    static string getTonce() noexcept
+    {
+        using namespace std::chrono;
 
+        milliseconds ms =
+            duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+
+        return std::to_string(ms.count());
+    };
     private:
 
       ////////////////////////////////////////////////////////////////////////

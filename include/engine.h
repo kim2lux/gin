@@ -7,7 +7,7 @@
 #include "position.h"
 #include <iostream>
 #include <vector>
-
+using namespace BfxAPI;
 const std::string currentDateTime();
 void logPosition(std::string && str);
 
@@ -35,6 +35,7 @@ public:
   Wallet _wallet;
   std::vector<std::string> _simuCandles;
 
+  int loadInstrument();
   void run();
   int updateInstrument(Instrument &instr);
   int initSimuCandles(Instrument &instr);

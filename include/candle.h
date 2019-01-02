@@ -20,6 +20,7 @@ struct candle
     macdHistogram = 0.0;
     macdSignal = 0.0;
     macdHistogram = 0.0;
+    hma = 0.0;
   }
   uint64_t timestamp;
   double open;
@@ -31,16 +32,17 @@ struct candle
   double macdHistogram;
   double macdSignal;
   double macd;
+  double hma;
 };
 
 class CandleInterface
 {
 public:
-  CandleInterface(bitfinexAPIv2 &bfxApi);
+  CandleInterface(BfxAPI::bitfinexAPIv2 & bfxApi);
   std::list<candle> retrieveCandles(Instrument &instr, const char *filepath = nullptr);
   std::list<candle> pushCandles(std::string json);
-  void save(std::string json, std::string &name);
+  void save(std::string json, std::string name);
   bool getLastCandle(Instrument &instr);
 
-  bitfinexAPIv2 &_bfxApi;
+  BfxAPI::bitfinexAPIv2 & _bfxApi;
 };

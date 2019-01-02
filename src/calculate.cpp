@@ -1,7 +1,43 @@
 #include "calculate.h"
 #include "indicators.h"
 
-void Calculate::updateMacd(Instrument & instr)
+void Calculate::updateHma(Instrument &instr)
+{
+    std::array<double, NB_CANDLES> arr_x;
+    int size = 0;
+    for (candle &i : instr._candles)
+    {
+        arr_x[size] = i.close;
+        size++;
+    }
+
+    TI_REAL *inputs[] = {arr_x.data()};
+    TI_REAL options[] = {20}; /* period */
+    TI_REAL *outputs[1];      /* hma */
+
+    /* Determine how large the output size is for our options. */
+    const int out_size = NB_CANDLES - ti_hma_start(options);
+
+    /* Allocate memory for output. */
+    outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
+    assert(outputs[0] != 0); /* hma */
+
+    /* Run the actual calculation. */
+    const int ret = ti_hma(NB_CANDLES, inputs, options, outputs);
+    assert(ret == TI_OKAY);
+    auto i = instr._candles.begin();
+    auto end = instr._candles.end();
+    uint32_t x = 0;
+    std::advance(i, NB_CANDLES - out_size);
+    while (i != end)
+    {
+        i->hma = outputs[0][x];
+        i++;
+        x++;
+    }
+}
+
+void Calculate::updateMacd(Instrument &instr)
 {
     std::array<double, NB_CANDLES> arr_x;
     int size = 0;
@@ -46,7 +82,7 @@ void Calculate::updateMacd(Instrument & instr)
     assert(ret == TI_OKAY);
 }
 
-void Calculate::updateRsi(Instrument & instr)
+void Calculate::updateRsi(Instrument &instr)
 {
     std::array<double, NB_CANDLES> arr_x;
     int size = 0;

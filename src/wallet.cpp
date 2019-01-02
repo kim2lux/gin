@@ -32,14 +32,14 @@ int Wallet::update(BfxAPI::BitfinexAPI &v1)
         std::cerr << "error retrieving wallet information" << std::endl;
         return (-1);
     }
-    std::cout << v1.strResponse() << std::endl;
     document.Parse(v1.strResponse().c_str());
 
-    std::cout << "last price: " << document["last_price"].GetString() << std::endl;
     lastPrice = atof(document["last_price"].GetString());
 
-    std::cout << available << " amount " << amount << " last price " << lastPrice << std::endl;
+    std::cout << "available: " << available
+              << " amount: " << amount 
+              << " last price: " << lastPrice << std::endl;
 
-    std::cout << lastPrice * available << std::endl;
+    std::cout << "total: " << lastPrice * available << std::endl;
     return (0);
 }
