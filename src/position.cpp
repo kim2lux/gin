@@ -7,7 +7,6 @@ int Position::makeOrder(Instrument &instr, double totalBuy)
     const candle &last = instr._candles.back();
     const std::time_t ts = last.timestamp;
     std::cout << std::ctime(&ts) << std::endl;
-    exit(-1);
     logPosition(std::string(std::string(ctime(&ts)) + " - Buy order: " + instr._v1name + " Current Price: " + std::to_string(last.close)));
     _v1.newOrder(instr._v1name,
                  totalBuy,
@@ -131,6 +130,7 @@ int Position::shortPosition(Instrument &i, bool simu = false)
     std::cout << " Orig Available: " << i.executedAmount << std::endl;
     if (last.rsi > 65)
     {
+        logPosition(std::string(" - RSI High but no sell : " + i._v1name + " Current Price: " + std::to_string(last.close)));
         std::cout << "RSI high" << std::endl;
         if (isMacdReducing(last, prelast, true) && prelast.hma >= last.hma)
         {
@@ -140,6 +140,7 @@ int Position::shortPosition(Instrument &i, bool simu = false)
             }
             else
             {
+                
                 i.orderId = 0;
                 i.orderPrice = 0;
             }

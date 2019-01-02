@@ -19,7 +19,7 @@ static std::pair<std::string, std::string> instruments[] = {
     std::make_pair("xmrbtc", "tXMRBTC"),
     std::make_pair("neobtc", "tNEOBTC"),
     std::make_pair("babbtc", "tBABBTC"),
-    //std::make_pair("bsvbtc", "tBSVBTC"),
+    std::make_pair("bsvbtc", "tBSVBTC"),
     std::make_pair("dshbtc", "tDSHBTC"),
     std::make_pair("ethbtc", "tETHBTC"),
     std::make_pair("omgbtc", "tOMGBTC"),
