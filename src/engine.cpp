@@ -63,7 +63,6 @@ int Engine::loadInstrument()
 {
     if (_config.simuMode == false)
     {
-        //_api.v1.getActiveOrders();
         for (auto &i : instruments)
         {
             vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
@@ -100,10 +99,10 @@ int Engine::makeOrders(Instrument &instr)
         return (-1);
     }
     std::cout << " ****************** " << std::endl;
-    instr.display();
     _calc.updateRsi(instr);
     _calc.updateMacd(instr);
     _calc.updateHma(instr);
+    instr.display();
     if (instr.orderId == 0)
         _position.makePosition(instr, _wallet, _config.simuMode);
     else

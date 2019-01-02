@@ -148,6 +148,7 @@ int Position::shortPosition(Instrument &i, bool simu = false)
             {
                 i.orderId = 0;
                 i.orderPrice = 0;
+                i.position = 0;
             }
             return (0);
         }
