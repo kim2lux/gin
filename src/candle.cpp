@@ -43,6 +43,8 @@ std::list<candle> CandleInterface::pushCandles(std::string json)
     document.Parse(json.c_str());
     Value &data = document;
     std::list<candle> candles;
+    if (data.IsArray() != true)
+        return candles;
     if (data.Size() != 100)
         return candles;
     for (auto &it : data.GetArray())
@@ -78,7 +80,8 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
         std::string request("/candles/trade:" + candleGapTime + ":" + instr._v2name + "/hist?limit=" + candleNumber + "&sort=1");
         //std::cout << "request => " << request << std::endl;
         _bfxApi.Request.get(request);
-        if (_bfxApi.Request.getLastStatusCode() != CURLE_OK) {
+        if (_bfxApi.Request.getLastStatusCode() != CURLE_OK)
+        {
             return (std::list<candle>());
         }
         save(_bfxApi.strResponse(), instr._v1name);

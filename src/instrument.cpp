@@ -17,10 +17,12 @@ void Instrument::initOrder(std::string json)
         std::cout << "no active orders" << std::endl;
         return;
     }
+    bool check = false;
     for (auto &it : data.GetArray())
     {
         if (strcmp(it["symbol"].GetString(), _v1name.c_str()) == 0)
         {
+            check = true;
             std::cout << "Found symbol order: " << it["symbol"].GetString() << std::endl;
             orderId = it["id"].GetDouble();
             orderPrice = atof(it["price"].GetString());
@@ -31,6 +33,16 @@ void Instrument::initOrder(std::string json)
                       << " executed amount:" << executedAmount
                       << " price buy: " << orderPrice << std::endl;
         }
+    }
+    if (check == false)
+    {
+        std::cout << "set 0 to price" << std::endl;
+        exit (0);
+
+        orderId = 0;
+        orderPrice = 0;
+        executedAmount = 0;
+        originalAmount = 0;
     }
 }
 
@@ -69,10 +81,7 @@ void Instrument::setOrder(std::string response, const candle &last, double total
 
     if (data.HasMember("message"))
     {
-        orderId = 0xff; //only debug
-        orderPrice = last.close;
-        orderSize = totalBuy;
-        position = true;
+        logPosition({"Not able to buy: " + response});
     }
     else
     {

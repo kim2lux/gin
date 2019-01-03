@@ -26,7 +26,8 @@ void logPosition(std::string &&str)
     //make sure write fails with exception if something is wrong
     file.exceptions(file.exceptions() | std::ios::failbit | std::ifstream::badbit);
 
-    file << currentDateTime() << " - " << str.c_str() << std::endl;
+    file << std::endl
+         << str.c_str() << std::endl;
 }
 
 Instrument getInstr(std::pair<std::string, std::string> &name, BfxAPI::bitfinexAPIv2 &bfxAPI,
@@ -42,6 +43,7 @@ int Engine::initSimuCandles(Instrument &instr)
     std::cout << "replaying: " << instr._v1name << std::endl;
     DIR *dirp = opendir(instr._v1name.c_str());
     struct dirent *dp;
+    _simuCandles.clear();
     while ((dp = readdir(dirp)) != NULL)
     {
         if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
@@ -73,7 +75,12 @@ int Engine::loadInstrument()
         std::string order;
         for (auto &p : instruments)
         {
-            if (p.first == _config.replaySymbolV1)
+            if (_config.replaySymbolV1.size() > 1)
+            {
+                if (p.first == _config.replaySymbolV1)
+                    vInstr.push_back({p.first, p.second, _api.v2, _api.v1, _candleInterface, order});
+            }
+            else
                 vInstr.push_back({p.first, p.second, _api.v2, _api.v1, _candleInterface, order});
         }
     }
@@ -107,7 +114,7 @@ int Engine::makeOrders(Instrument &instr)
         _position.makePosition(instr, _wallet, _config.simuMode);
     else
     {
-        _position.shortPosition(instr, _config.simuMode);
+        _position.shortPosition(instr, _wallet, _config.simuMode);
     }
     std::cout << " ****************** " << std::endl;
     return (0);
@@ -127,9 +134,9 @@ int Engine::updateInstrument(Instrument &instr)
         for (auto &path : _simuCandles)
         {
             instr.updateCandles(true, path.c_str());
+            std::cout << "debug PRICE ! " << instr.orderPrice << std::endl;
             this->makeOrders(instr);
         }
-        exit(-1);
     }
     return (0);
 }
@@ -165,6 +172,8 @@ void Engine::run()
                 std::cerr << "Unknown failure occurred. Possible memory corruption" << std::endl;
             }
         }
+        if (_config.simuMode == true)
+            exit(1);
     }
 }
 

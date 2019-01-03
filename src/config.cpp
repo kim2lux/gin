@@ -15,14 +15,18 @@ int Config::init(int argc, char **argv)
         ifs.close();
     }
 
-    if (argc == 3)
+    if (argc >= 2)
     {
         std::cout << "Init Api" << std::endl;
 
         std::cout << argc << std::endl;
         simuMode = true;
-        replaySymbolV1 = argv[2];
-        std::cout << "replaying instr: " << argv[2] << std::endl;
+        replaySymbolV1.clear();
+        if (argc == 3)
+        {
+            replaySymbolV1 = argv[2];
+            std::cout << "replaying instr: " << argv[2] << std::endl;
+        }
         return (0);
     }
     else if (argc != 1)
