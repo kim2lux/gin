@@ -36,9 +36,6 @@ void Instrument::initOrder(std::string json)
     }
     if (check == false)
     {
-        std::cout << "set 0 to price" << std::endl;
-        exit (0);
-
         orderId = 0;
         orderPrice = 0;
         executedAmount = 0;

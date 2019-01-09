@@ -61,12 +61,49 @@ int Engine::initSimuCandles(Instrument &instr)
     return (0);
 }
 
+std::string convertSymToV2(std::string v1)
+{
+    std::string v2(7, 0);
+    std::transform(v1.begin(), v1.end(), v2.begin(), ::toupper);
+    const char *str = v2.c_str();
+    std::string res(str);
+    return res;
+}
+
+int Engine::retrieveInstrument()
+{
+    _api.v1.getSymbols();
+
+    Document document;
+    document.Parse(_api.v1.strResponse().c_str());
+    Value &data = document;
+    if (data.Size() < 150)
+        return -1;
+    for (uint32_t ite = 0; ite < data.Size(); ite += 1)
+    {
+        std::string v1 = data[ite].GetString();
+        std::string v2;
+        const std::string suffix("btc");
+        if (v1.compare(3, 3, suffix) == 0)
+        {
+            v2 = convertSymToV2(data[ite].GetString());
+            //std::cout << data[ite].GetString() << std::endl;
+            _instruments.push_back(make_pair(v1, v2));
+        }
+
+        //            _instruments.push_back(data[ite].GetString());
+    }
+    return 0;
+}
+
 int Engine::loadInstrument()
 {
+    retrieveInstrument();
     if (_config.simuMode == false)
     {
-        for (auto &i : instruments)
+        for (auto &i : _instruments)
         {
+            std::cout << i.first << " v2: " << i.second << std::endl;
             vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
         }
     }
@@ -103,20 +140,22 @@ int Engine::makeOrders(Instrument &instr)
             if (_config.simuMode == false)
                 sleep(10);
         }
-        return (-1);
     }
-    std::cout << " ****************** " << std::endl;
-    _calc.updateRsi(instr);
-    _calc.updateMacd(instr);
-    _calc.updateHma(instr);
-    instr.display();
-    if (instr.orderId == 0)
-        _position.makePosition(instr, _wallet, _config.simuMode);
     else
     {
-        _position.shortPosition(instr, _wallet, _config.simuMode);
+        std::cout << " ****************** " << std::endl;
+        _calc.updateRsi(instr);
+        _calc.updateMacd(instr);
+        _calc.updateHma(instr);
+        instr.display();
+        if (instr.orderId == 0)
+            _position.makePosition(instr, _wallet, _config.simuMode);
+        else
+        {
+            _position.shortPosition(instr, _wallet, _config.simuMode);
+        }
+        std::cout << " ****************** " << std::endl;
     }
-    std::cout << " ****************** " << std::endl;
     return (0);
 }
 

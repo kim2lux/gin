@@ -14,6 +14,7 @@ const std::string candleGapTime("1m");
 const std::string candleNumber("100");
 
 static std::pair<std::string, std::string> instruments[] = {
+    std::make_pair("ltcbtc", "tLTCBTC"),
     std::make_pair("iotbtc", "tIOTBTC"),
     std::make_pair("xrpbtc", "tXRPBTC"),
     std::make_pair("xmrbtc", "tXMRBTC"),
@@ -26,7 +27,6 @@ static std::pair<std::string, std::string> instruments[] = {
     std::make_pair("xlmbtc", "tXLMBTC"),
     std::make_pair("lymbtc", "tLYMBTC"),
     std::make_pair("repbtc", "tREPBTC"),
-    std::make_pair("ltcbtc", "tLTCBTC"),
     std::make_pair("eosbtc", "tEOSBTC"),
     std::make_pair("seebtc", "tSEEBTC"),
     std::make_pair("vetbtc", "tVETBTC"),

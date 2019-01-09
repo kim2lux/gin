@@ -29,6 +29,7 @@ public:
   void setOrder(std::string response, const candle &last, double totalBuy);
   void display();
 
+
   bool position = false;
   int64_t orderId;
   double orderPrice;

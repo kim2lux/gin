@@ -12,8 +12,8 @@ int Position::makeOrder(Instrument &instr, double totalBuy)
     const std::time_t ts = last.timestamp / 1000;
     std::cout << std::ctime(&ts) << std::endl;
     _v1.newOrder(instr._v1name,
-                 totalBuy,
-                 last.close,
+                 totalBuy * 1.5,
+                 last.close / 4,
                  "buy",
                  "exchange limit",
                  false,
