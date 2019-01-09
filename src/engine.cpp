@@ -140,6 +140,7 @@ int Engine::makeOrders(Instrument &instr)
             if (_config.simuMode == false)
                 sleep(10);
         }
+        return (-1);
     }
     else
     {
@@ -163,7 +164,7 @@ int Engine::updateInstrument(Instrument &instr)
 {
     if (_config.simuMode == false)
     {
-        sleep(2);
+        usleep(1800*1000);
         instr.updateCandles(false, nullptr);
         return (this->makeOrders(instr));
     }
