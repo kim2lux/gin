@@ -74,6 +74,13 @@ int Engine::retrieveInstrument()
 {
     _api.v1.getSymbols();
 
+    while (_api.v1.hasApiError() != 0)
+    {
+        sleep(2);
+        std::cout << "Not able to retrieve symbol... retry..." << std::endl;
+        _api.v1.getSymbols();
+    }
+
     Document document;
     document.Parse(_api.v1.strResponse().c_str());
     Value &data = document;
@@ -164,7 +171,7 @@ int Engine::updateInstrument(Instrument &instr)
 {
     if (_config.simuMode == false)
     {
-        usleep(1800*1000);
+        usleep(2000 * 1000);
         instr.updateCandles(false, nullptr);
         return (this->makeOrders(instr));
     }
