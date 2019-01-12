@@ -33,6 +33,9 @@ struct candle
   double macdSignal;
   double macd;
   double hma;
+  double plus_di;
+  double minus_di;
+  double adx;
 };
 
 class CandleInterface
@@ -45,4 +48,6 @@ public:
   bool getLastCandle(Instrument &instr);
 
   BfxAPI::bitfinexAPIv2 & _bfxApi;
+
+  bool _record;
 };

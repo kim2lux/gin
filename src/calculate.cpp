@@ -12,7 +12,7 @@ void Calculate::updateHma(Instrument &instr)
     }
 
     TI_REAL *inputs[] = {arr_x.data()};
-    TI_REAL options[] = {20}; /* period */
+    TI_REAL options[] = {30}; /* period */
     TI_REAL *outputs[1];      /* hma */
 
     /* Determine how large the output size is for our options. */
@@ -113,5 +113,82 @@ void Calculate::updateRsi(Instrument &instr)
         x++;
     }
 
+    assert(ret == TI_OKAY);
+}
+
+void Calculate::updateDi(Instrument &instr)
+{
+    std::array<double, NB_CANDLES> arr_close;
+    std::array<double, NB_CANDLES> arr_high;
+    std::array<double, NB_CANDLES> arr_low;
+    int size = 0;
+    for (candle &i : instr._candles)
+    {
+        arr_high[size] = i.high;
+        arr_low[size] = i.low;
+        arr_close[size] = i.close;
+        size++;
+    }
+
+    TI_REAL *inputs[] = {arr_high.data(), arr_low.data(), arr_close.data()};
+    TI_REAL options[] = {20};
+    TI_REAL *outputs[2];
+
+    const int out_size = NB_CANDLES - ti_di_start(options);
+
+    outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size); /* plus_di */
+    assert(outputs[0] != 0);
+    outputs[1] = (double *)malloc(sizeof(TI_REAL) * out_size); /* minus_di */
+    assert(outputs[1] != 0);
+    const int ret = ti_di(NB_CANDLES, inputs, options, outputs);
+std::cout << "di out size" << out_size << std::endl;
+    auto i = instr._candles.begin();
+    auto end = instr._candles.end();
+    uint32_t x = 0;
+    std::advance(i, NB_CANDLES - out_size);
+    while (i != end)
+    {
+        i->plus_di = outputs[0][x];
+        i->minus_di = outputs[1][x];
+        i++;
+        x++;
+    }
+    assert(ret == TI_OKAY);
+}
+
+void Calculate::updateAdx(Instrument &instr)
+{
+    std::array<double, NB_CANDLES> arr_close;
+    std::array<double, NB_CANDLES> arr_high;
+    std::array<double, NB_CANDLES> arr_low;
+    int size = 0;
+    for (candle &i : instr._candles)
+    {
+        arr_high[size] = i.high;
+        arr_low[size] = i.low;
+        arr_close[size] = i.close;
+        size++;
+    }
+
+    TI_REAL *inputs[] = {arr_high.data(), arr_low.data(), arr_close.data()};
+    TI_REAL options[] = {20};
+    TI_REAL *outputs[1];
+
+    const int out_size = NB_CANDLES - ti_adx_start(options);
+    std::cout << "adx out size" << out_size << std::endl;
+    outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size); /* plus_di */
+    assert(outputs[0] != 0);
+    const int ret = ti_adx(NB_CANDLES, inputs, options, outputs);
+
+    auto i = instr._candles.begin();
+    auto end = instr._candles.end();
+    uint32_t x = 0;
+    std::advance(i, NB_CANDLES - out_size);
+    while (i != end)
+    {
+        i->adx = outputs[0][x];
+        i++;
+        x++;
+    }
     assert(ret == TI_OKAY);
 }

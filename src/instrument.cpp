@@ -9,12 +9,17 @@ void logPosition(std::string &&str);
 
 void Instrument::initOrder(std::string json)
 {
+    std::cout << json << std::endl;
     Document document;
     document.Parse(json.c_str());
     Value &data = document;
     if (data.IsArray() == false)
     {
         std::cout << "no active orders" << std::endl;
+        orderId = 0;
+        orderPrice = 0;
+        executedAmount = 0;
+        originalAmount = 0;
         return;
     }
     bool check = false;
@@ -113,8 +118,11 @@ void Instrument::display()
             << std::setprecision(12) << std::fixed << "Timestamp: " << ctime(&a)
             << " Instrument: " << _v1name << " rsi: " << i.rsi
             << " Close: " << i.close << std::endl
-            << " Macd: " << i.macd << std::endl
-            << " Macd_signal: " << i.macdSignal << std::endl
+            << " ADX: " << i.adx << std::endl
+            << " +DI: " << i.plus_di << std::endl
+            << " -DI: " << i.minus_di << std::endl
+            //<< " Macd: " << i.macd << std::endl
+            //<< " Macd_signal: " << i.macdSignal << std::endl
             << " Macd_histo: " << i.macdHistogram << std::endl
             << " Hma: " << i.hma << std::endl
             << std::endl;

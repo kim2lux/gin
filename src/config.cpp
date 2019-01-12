@@ -1,4 +1,6 @@
 #include "config.h"
+#include <stdio.h>
+#include <string.h>
 
 Config::Config(int ac, char **av)
 {
@@ -17,10 +19,19 @@ int Config::init(int argc, char **argv)
 
     if (argc >= 2)
     {
-        std::cout << "Init Api" << std::endl;
+        if (strcmp("replay", argv[1]) == 0)
+        {
 
-        std::cout << argc << std::endl;
-        simuMode = true;
+            simuMode = true;
+            record = false;
+        }
+        else if (strcmp("record", argv[1]) == 0)
+        {
+            record = true;
+            simuMode = false;
+            std::cout << "recording..." << std::endl;
+            return (0);
+        }
         replaySymbolV1.clear();
         if (argc == 3)
         {

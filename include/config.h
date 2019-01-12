@@ -41,7 +41,8 @@ class Config
     Config(int ac, char **av);
     int init(int ac, char **av);
 
-    bool simuMode;
+    bool simuMode = false;
+    bool record = false;
     std::string accessKey;
     std::string secretKey;
     std::string replaySymbolV1;

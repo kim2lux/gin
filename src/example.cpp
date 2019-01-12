@@ -34,10 +34,12 @@ int main(int argc, char *argv[])
     Config config(argc, argv);
     while (true)
     {
-        std::cout << "starting program" << std::endl;
-        Engine engine(config);
+        {
+            std::cout << "starting program" << std::endl;
+            Engine engine(config);
 
-        engine.run();
+            engine.run();
+        }
     }
 
     return 0;

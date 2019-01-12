@@ -23,12 +23,20 @@ CandleInterface::CandleInterface(BfxAPI::bitfinexAPIv2 &bfxApi) : _bfxApi(bfxApi
 
 void CandleInterface::save(std::string json, std::string name)
 {
-    mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
+    if (_record == false)
+        mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
+    else
+    {
+        mkdir("record", S_IRWXU | S_IRWXG | S_IROTH);
+        name.insert(0, "record/");
+        mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
+    }
     time_t t = std::time(0);
     long int now = static_cast<long int>(t);
     Document document;
     document.Parse(json.c_str());
     std::string path(name + "/output_" + to_string(now) + ".json");
+    std::cout << "saving in: " << path << std::endl;
     FILE *fp = fopen(path.c_str(), "wb"); // non-Windows use "w"
     char writeBuffer[65536];
     FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
@@ -82,6 +90,9 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
         _bfxApi.Request.get(request);
         if (_bfxApi.Request.getLastStatusCode() != CURLE_OK)
         {
+            std::cout << "error retrieving candles" << std::endl;
+            sleep(10);
+            throw;
             return (std::list<candle>());
         }
         save(_bfxApi.strResponse(), instr._v1name);

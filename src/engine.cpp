@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "calculate.h"
-
+extern double totalDiff;
 const std::string currentDateTime()
 {
     time_t now = time(0);
@@ -54,10 +54,6 @@ int Engine::initSimuCandles(Instrument &instr)
     }
     closedir(dirp);
     sort(_simuCandles.begin(), _simuCandles.end());
-    for (auto &path : _simuCandles)
-    {
-        std::cout << path << std::endl;
-    }
     return (0);
 }
 
@@ -72,6 +68,8 @@ std::string convertSymToV2(std::string v1)
 
 int Engine::retrieveInstrument()
 {
+    //    _instruments.push_back(make_pair(std::string("sntbtc"), std::string("SNTBTC")));
+    //    return (0);
     _api.v1.getSymbols();
 
     while (_api.v1.hasApiError() != 0)
@@ -110,14 +108,13 @@ int Engine::loadInstrument()
     {
         for (auto &i : _instruments)
         {
-            std::cout << i.first << " v2: " << i.second << std::endl;
             vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
         }
     }
     else
     {
         std::string order;
-        for (auto &p : instruments)
+        for (auto &p : _instruments)
         {
             if (_config.replaySymbolV1.size() > 1)
             {
@@ -138,7 +135,7 @@ int Engine::loadInstrument()
 
 int Engine::makeOrders(Instrument &instr)
 {
-    if (instr._candles.size() != 100)
+    if (instr._candles.size() <= 50)
     {
         std::cout << "Candles not loaded !" << std::endl;
         if (_config.simuMode == false)
@@ -155,6 +152,8 @@ int Engine::makeOrders(Instrument &instr)
         _calc.updateRsi(instr);
         _calc.updateMacd(instr);
         _calc.updateHma(instr);
+        _calc.updateDi(instr);
+        _calc.updateAdx(instr);
         instr.display();
         if (instr.orderId == 0)
             _position.makePosition(instr, _wallet, _config.simuMode);
@@ -173,7 +172,8 @@ int Engine::updateInstrument(Instrument &instr)
     {
         usleep(2000 * 1000);
         instr.updateCandles(false, nullptr);
-        return (this->makeOrders(instr));
+        if (_config.record == false)
+            return (this->makeOrders(instr));
     }
     else
     {
@@ -181,7 +181,6 @@ int Engine::updateInstrument(Instrument &instr)
         for (auto &path : _simuCandles)
         {
             instr.updateCandles(true, path.c_str());
-            std::cout << "debug PRICE ! " << instr.orderPrice << std::endl;
             this->makeOrders(instr);
         }
     }
@@ -190,42 +189,53 @@ int Engine::updateInstrument(Instrument &instr)
 
 void Engine::run()
 {
-    while (true)
+
+    if (_config.simuMode == false && _config.record == false)
     {
-        if (_config.simuMode == false)
+        _api.v1.getActiveOrders();
+        if (_api.v1.Request.getLastStatusCode() != CURLE_OK)
         {
-            _api.v1.getActiveOrders();
-            std::cout << "orders update: " << _api.v1.strResponse() << std::endl;
+            std::cout << "error retrieve active order" << std::endl;
+            return;
+        }
+        if (_api.v1.hasApiError())
+        {
+            std::cout << "orders api error" << std::endl;
+            return;
         }
         for (auto &instr : vInstr)
         {
-            try
-            {
-                instr.initOrder(_api.v1.strResponse());
-                if (updateInstrument(instr) != 0)
-                    return;
-            }
-            catch (const std::runtime_error &re)
-            {
-                std::cerr << "Runtime error: " << re.what() << std::endl;
-            }
-            catch (const std::exception &ex)
-            {
-                std::cerr << "Error occurred: " << ex.what() << std::endl;
-            }
-            catch (...)
-            {
-                // catch any other errors (that we have no information about)
-                std::cerr << "Unknown failure occurred. Possible memory corruption" << std::endl;
-            }
+            instr.initOrder(_api.v1.strResponse());
         }
-        if (_config.simuMode == true)
-            exit(1);
+    }
+    for (auto &instr : vInstr)
+    {
+        try
+        {
+            if (updateInstrument(instr) != 0)
+                std::cout << "issue retrieving candles" << std::endl;
+        }
+        catch (const std::runtime_error &re)
+        {
+            std::cerr << "Runtime error: " << re.what() << std::endl;
+            return;
+        }
+        catch (const std::exception &ex)
+        {
+            std::cerr << "Error occurred: " << ex.what() << std::endl;
+            return;
+        }
+        catch (...)
+        {
+            std::cerr << "Unknown failure occurred" << std::endl;
+            return;
+        }
     }
 }
 
 Engine::Engine(Config &config) : _config(config), _api(config), _position(_api.v1), _candleInterface(_api.v2)
 {
+    _candleInterface._record = _config.record;
     if (_api.v2.getStatus() == 0)
     {
         std::cout << "Bitfinex server in maintenance" << std::endl;
