@@ -64,11 +64,18 @@ std::list<candle> CandleInterface::pushCandles(std::string json)
                             it[4].GetDouble(),
                             it[5].GetDouble()});
     }
-    return candles;
+    std::cout << candles.size() << std::endl;
 }
 
-std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char *filepath)
+std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char *filepath, uint32_t nbCandles)
 {
+    std::list<candle> cl;
+
+    if (_bfxApi.Request.getLastStatusCode() != CURLE_OK)
+    {
+        std::cout << "error retrieving candles" << std::endl;
+    }
+
     if (filepath != nullptr)
     {
         FILE *fp = fopen(filepath, "r"); // non-Windows use "r"
@@ -81,13 +88,20 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
         std::string input(readBuffer);
         fclose(fp);
+        if (input.find("error") != std::string::npos)
+        {
+            std::cout << "Error loading candle" << std::endl;
+            return (cl);
+        }
         return (pushCandles(input));
     }
     else
     {
-        std::string request("/candles/trade:" + candleGapTime + ":t" + instr._v2name + "/hist?limit=" + candleNumber + "&sort=1");
+        std::string nbcand(to_string(nbCandles));
+        std::string request("/candles/trade:" + candleGapTime + ":t" + instr._v2name + "/hist?limit=" + nbcand + "&sort=1");
         std::cout << "request => " << request << std::endl;
         _bfxApi.Request.get(request);
+
         if (_bfxApi.Request.getLastStatusCode() != CURLE_OK)
         {
             std::cout << "error retrieving candles" << std::endl;
@@ -95,6 +109,7 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
             throw;
             return (std::list<candle>());
         }
+        std::cout << _bfxApi.strResponse() << std::endl;
         save(_bfxApi.strResponse(), instr._v1name);
         return (pushCandles(_bfxApi.strResponse()));
     }

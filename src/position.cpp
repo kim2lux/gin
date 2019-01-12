@@ -6,6 +6,44 @@ void logPosition(std::string &&str);
 
 double totalDiff = 0;
 
+void logSell(std::string &&res, Instrument &i, Wallet &wallet, const candle &last, const candle &prelast)
+{
+    std::stringstream stream;
+    std::time_t ts = last.timestamp / 1000;
+    double diff = (last.close - i.orderPrice) * i.orderSize;
+
+    totalDiff += diff;
+
+    stream << res << std::string(ctime(&ts))
+           << std::fixed << std::setprecision(9) << " Diff: " << diff
+           << " Money: " << diff * wallet.lastPrice
+           << " Total: " << totalDiff * wallet.lastPrice
+           << " Name: " << i._v1name
+           << " Current Price: " << std::to_string(last.close)
+           << " Current HMA: " << std::to_string(last.hma)
+           << " Past    HMA: " << std::to_string(prelast.hma)
+           << " Buy Order Price: " << std::to_string(i.orderPrice)
+           << " Quantity: " << std::to_string(i.orderSize);
+    string sdiff = stream.str();
+    logPosition(std::string(sdiff));
+}
+
+void logBuy(std::string &&res, Instrument &i, Wallet &wallet, const candle &last)
+{
+    std::stringstream stream;
+    std::time_t ts = last.timestamp / 1000;
+    stream << res << std::string(ctime(&ts)) << " instrument: " << i._v1name
+           << std::fixed << std::setprecision(9)
+           << " Current Price: " << std::to_string(last.close)
+           << " OrderSize: " << i.orderSize
+           << " OrderPrice: " << i.orderPrice
+           << " TotalOrder: " << i.orderSize * i.orderPrice * wallet.lastPrice
+           << " Total Btc" << i.orderSize * i.orderPrice;
+
+    string sdiff = stream.str();
+    logPosition(std::string(sdiff));
+}
+
 int Position::makeOrder(Instrument &instr, double totalBuy)
 {
     const candle &last = instr._candles.back();
@@ -83,36 +121,22 @@ int Position::isMacdReducing(const candle &last, const candle &prelast, bool sel
     return -1;
 }
 
-void logBuy(std::string &&res, Instrument &i, Wallet &wallet, const candle &last)
-{
-    std::stringstream stream;
-    std::time_t ts = last.timestamp / 1000;
-    stream << res << std::string(ctime(&ts)) << " instrument: " << i._v1name
-           << std::fixed << std::setprecision(9)
-           << " Current Price: " << std::to_string(last.close)
-           << " OrderSize: " << i.orderSize
-           << " OrderPrice: " << i.orderPrice
-           << " TotalOrder: " << i.orderSize * i.orderPrice * wallet.lastPrice
-           << " Total Btc" << i.orderSize * i.orderPrice;
-
-    string sdiff = stream.str();
-    logPosition(std::string(sdiff));
-}
-
-int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false)
+int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false, bool backtest = false)
 {
     const candle last = i._candles.back();
+    auto prelast = i._candles.end();
+    std::advance(prelast, -2);
+
     //i._candles.pop_back();
     //const candle &prelast = i._candles.back();
 
-    //    if (last.adx > 22 && last.adx > prelast.adx && last.plus_di > last.minus_di && last.macdHistogram > 0)
-    if (last.rsi < 23)
+    //if (last.adx > 21 && last.plus_di > last.minus_di && last.adx >  prelast->adx)
+    if (last.rsi < 25)
     {
-
         double unitPrice = last.close * _wallet.lastPrice;
         double totalBuy = 3 / unitPrice;
 
-        if (simu == false)
+        if (simu == false && backtest == false)
         {
             makeOrder(i, totalBuy);
         }
@@ -128,39 +152,16 @@ int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false)
     return (0);
 }
 
-void logSell(std::string &&res, Instrument &i, Wallet &wallet, const candle &last)
-{
-    std::stringstream stream;
-    std::time_t ts = last.timestamp / 1000;
-    double diff = (last.close - i.orderPrice) * i.orderSize;
-
-    totalDiff += diff;
-
-    stream << res << std::string(ctime(&ts))
-           << std::fixed << std::setprecision(9) << " Diff: " << diff
-           << " Money: " << diff * wallet.lastPrice
-           << " Total: " << totalDiff * wallet.lastPrice
-           << " Name: " << i._v1name
-           << " Current Price: " << std::to_string(last.close)
-           << " Current DI plus: " << std::to_string(last.plus_di)
-           << " Current DI minus: " << std::to_string(last.minus_di)
-           << " Current ADX: " << std::to_string(last.adx)
-           << " Buy Order Price: " << std::to_string(i.orderPrice)
-           << " Quantity: " << std::to_string(i.orderSize);
-    string sdiff = stream.str();
-    logPosition(std::string(sdiff));
-}
-
-int Position::shortPosition(Instrument &i, Wallet &wallet, bool simu = false)
+int Position::shortPosition(Instrument &i, Wallet &wallet, bool simu = false, bool backtest = false)
 {
     const candle last = i._candles.back();
-    //i._candles.pop_back();
-    //const candle &prelast = i._candles.back();
+    auto end = i._candles.end();
+    std::advance(end, -2);
 
-    if (i.orderPrice < last.close * 1.003)
+    if (i.orderPrice * 1.03 < last.close)// && last.hma <= end->hma)
     {
-        logSell("Winning sell: ", i, wallet, last);
-        if (simu == false)
+        logSell("Winning sell: ", i, wallet, last, *end);
+        if (simu == false && backtest == false)
         {
             shortOrder(i);
         }
@@ -169,10 +170,10 @@ int Position::shortPosition(Instrument &i, Wallet &wallet, bool simu = false)
             i.clearOrder();
         }
     }
-    else if (i.orderPrice * 0.997 > last.close)
+    else if (i.orderPrice * 0.97 > last.close)
     {
-        logSell("Loosing sell: ", i, wallet, last);
-        if (simu == false)
+        logSell("Loosing sell: ", i, wallet, last, *end);
+        if (simu == false && backtest == false)
         {
             shortOrder(i);
         }

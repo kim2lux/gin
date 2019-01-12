@@ -43,6 +43,7 @@ class Config
 
     bool simuMode = false;
     bool record = false;
+    bool backTest = false;
     std::string accessKey;
     std::string secretKey;
     std::string replaySymbolV1;

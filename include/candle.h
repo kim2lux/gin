@@ -42,7 +42,7 @@ class CandleInterface
 {
 public:
   CandleInterface(BfxAPI::bitfinexAPIv2 & bfxApi);
-  std::list<candle> retrieveCandles(Instrument &instr, const char *filepath = nullptr);
+  std::list<candle> retrieveCandles(Instrument &instr, const char *filepath = nullptr, uint32_t = 100);
   std::list<candle> pushCandles(std::string json);
   void save(std::string json, std::string name);
   bool getLastCandle(Instrument &instr);
@@ -50,4 +50,5 @@ public:
   BfxAPI::bitfinexAPIv2 & _bfxApi;
 
   bool _record;
+  uint32_t nbCandles;
 };

@@ -58,20 +58,50 @@ Instrument::Instrument(std::string v1name, std::string v2name,
     orderSize = 0;
     originalAmount = 0;
     executedAmount = 0;
+    backTest = false;
+    position = false;
+    _candlePosition = 0;
     //if (!jsonOrders.empty())
     //    initOrder(jsonOrders);
+}
+
+void Instrument::updateFromAll()
+{
+    _candles.pop_front();
+    auto iter = _totalCandles.begin();
+    std::advance(iter, _candlePosition);
+    _candles.push_back(*iter);
+    _candlePosition++;
+}
+
+void Instrument::loadCandleFromAll()
+{
+    _candles.clear();
+    int i = 0;
+    auto iter = _totalCandles.begin();
+//    std::advance(iter, _candlePosition);
+    int x = 0;
+    while (i < 100)
+    {
+        _candles.push_back(*iter);
+        iter++;
+        i++;
+        _candlePosition++;
+    }
+    
 }
 
 void Instrument::updateCandles(bool replay, const char *filepath)
 {
     _candles.clear();
+
     if (replay == true)
     {
-        _candles = std::move(_icandle.retrieveCandles(*this, filepath));
+        _candles = std::move(_icandle.retrieveCandles(*this, filepath, 0));
     }
     else
     {
-        _candles = std::move(_icandle.retrieveCandles(*this));
+        _candles = std::move(_icandle.retrieveCandles(*this, nullptr, 100));
     }
 }
 

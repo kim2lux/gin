@@ -4,6 +4,9 @@
 
 Config::Config(int ac, char **av)
 {
+    simuMode = false;
+    record = false;
+    backTest = false;
     init(ac, av);
 }
 
@@ -31,6 +34,10 @@ int Config::init(int argc, char **argv)
             simuMode = false;
             std::cout << "recording..." << std::endl;
             return (0);
+        }
+        else if (strcmp("backtest", argv[1]) == 0)
+        {
+            backTest = true;
         }
         replaySymbolV1.clear();
         if (argc == 3)

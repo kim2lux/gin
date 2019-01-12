@@ -41,14 +41,15 @@ Instrument getInstr(std::pair<std::string, std::string> &name, BfxAPI::bitfinexA
 int Engine::initSimuCandles(Instrument &instr)
 {
     std::cout << "replaying: " << instr._v1name << std::endl;
-    DIR *dirp = opendir(instr._v1name.c_str());
+    std::string record("record/" + instr._v1name);
+    DIR *dirp = opendir(record.c_str());
     struct dirent *dp;
     _simuCandles.clear();
     while ((dp = readdir(dirp)) != NULL)
     {
         if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
         {
-            std::string path(instr._v1name + "/" + dp->d_name);
+            std::string path(record + "/" + dp->d_name);
             _simuCandles.push_back(path);
         }
     }
@@ -88,7 +89,7 @@ int Engine::retrieveInstrument()
     {
         std::string v1 = data[ite].GetString();
         std::string v2;
-        const std::string suffix("btc");
+        const std::string suffix("usd");
         if (v1.compare(3, 3, suffix) == 0)
         {
             v2 = convertSymToV2(data[ite].GetString());
@@ -156,10 +157,10 @@ int Engine::makeOrders(Instrument &instr)
         _calc.updateAdx(instr);
         instr.display();
         if (instr.orderId == 0)
-            _position.makePosition(instr, _wallet, _config.simuMode);
+            _position.makePosition(instr, _wallet, _config.simuMode, _config.backTest);
         else
         {
-            _position.shortPosition(instr, _wallet, _config.simuMode);
+            _position.shortPosition(instr, _wallet, _config.simuMode, _config.backTest);
         }
         std::cout << " ****************** " << std::endl;
     }
@@ -168,14 +169,33 @@ int Engine::makeOrders(Instrument &instr)
 
 int Engine::updateInstrument(Instrument &instr)
 {
-    if (_config.simuMode == false)
+    if (_config.simuMode == false && _config.backTest == false)
     {
         usleep(2000 * 1000);
         instr.updateCandles(false, nullptr);
         if (_config.record == false)
             return (this->makeOrders(instr));
     }
-    else
+    else if (_config.backTest == true)
+    {
+
+        instr._totalCandles = std::move(_candleInterface.retrieveCandles(instr, nullptr, 5000));
+        std::cout << "total candle loaded" << std::endl;
+        if (instr._totalCandles.size() < 100)
+        {
+            std::cout << "total candle too small" << std::endl;
+            sleep(10);
+            return (0);
+        }
+        instr.loadCandleFromAll();
+        while (instr._totalCandles.size() > instr._candlePosition)
+        {
+            instr.updateFromAll();
+            this->makeOrders(instr);
+        }
+        sleep(15);
+    }
+    else if (_config.simuMode == true)
     {
         initSimuCandles(instr);
         for (auto &path : _simuCandles)
@@ -190,7 +210,7 @@ int Engine::updateInstrument(Instrument &instr)
 void Engine::run()
 {
 
-    if (_config.simuMode == false && _config.record == false)
+    if (_config.simuMode == false && _config.record == false && _config.backTest == false)
     {
         _api.v1.getActiveOrders();
         if (_api.v1.Request.getLastStatusCode() != CURLE_OK)
@@ -210,6 +230,8 @@ void Engine::run()
     }
     for (auto &instr : vInstr)
     {
+        instr.backTest = _config.backTest;
+        std::cout << "instr test" << std::endl;
         try
         {
             if (updateInstrument(instr) != 0)
@@ -217,20 +239,23 @@ void Engine::run()
         }
         catch (const std::runtime_error &re)
         {
-            std::cerr << "Runtime error: " << re.what() << std::endl;
+            std::cout << "Runtime error: " << re.what() << std::endl;
             return;
         }
         catch (const std::exception &ex)
         {
-            std::cerr << "Error occurred: " << ex.what() << std::endl;
+            std::cout << "Error occurred: " << ex.what() << std::endl;
             return;
         }
         catch (...)
         {
-            std::cerr << "Unknown failure occurred" << std::endl;
+            std::cout << "Unknown failure occurred" << std::endl;
             return;
         }
+        std::cout << std::fixed << std::setprecision(9) << "Total: " << std::endl;
     }
+    if (_config.simuMode == true || _config.backTest == true)
+        exit(0);
 }
 
 Engine::Engine(Config &config) : _config(config), _api(config), _position(_api.v1), _candleInterface(_api.v2)

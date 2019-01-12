@@ -16,7 +16,8 @@ class Position
 
     int shortOrder(Instrument & instr);
     int makeOrder(Instrument & instr, double totalBuy);
-    int makePosition(Instrument &i,  Wallet &, bool);
-    int shortPosition(Instrument &i, Wallet &, bool);
+    int makePosition(Instrument &i,  Wallet &, bool, bool);
+    int shortPosition(Instrument &i, Wallet &, bool, bool);
     int isMacdReducing(const candle & last, const candle & prelast, bool sell);
+
 };

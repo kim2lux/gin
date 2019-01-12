@@ -12,23 +12,23 @@ void Calculate::updateHma(Instrument &instr)
     }
 
     TI_REAL *inputs[] = {arr_x.data()};
-    TI_REAL options[] = {30}; /* period */
+    TI_REAL options[] = {9}; /* period */
     TI_REAL *outputs[1];      /* hma */
 
     /* Determine how large the output size is for our options. */
-    const int out_size = NB_CANDLES - ti_hma_start(options);
+    const int out_size =  instr._candles.size() - ti_hma_start(options);
 
     /* Allocate memory for output. */
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
     assert(outputs[0] != 0); /* hma */
 
     /* Run the actual calculation. */
-    const int ret = ti_hma(NB_CANDLES, inputs, options, outputs);
+    const int ret = ti_hma(instr._candles.size(), inputs, options, outputs);
     assert(ret == TI_OKAY);
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
+    std::advance(i, instr._candles.size() - out_size);
     while (i != end)
     {
         i->hma = outputs[0][x];
@@ -54,7 +54,7 @@ void Calculate::updateMacd(Instrument &instr)
     TI_REAL *outputs[3];             /* macd, macd_signal, macd_histogram */
 
     /* Determine how large the output size is for our options. */
-    const int out_size = NB_CANDLES - ti_macd_start(options);
+    const int out_size = instr._candles.size() - ti_macd_start(options);
 
     /* Allocate memory for each output. */
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
@@ -65,12 +65,12 @@ void Calculate::updateMacd(Instrument &instr)
     assert(outputs[2] != 0); /* macd_histogram */
 
     /* Run the actual calculation. */
-    const int ret = ti_macd(NB_CANDLES, inputs, options, outputs);
+    const int ret = ti_macd(instr._candles.size(), inputs, options, outputs);
 
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
+    std::advance(i, instr._candles.size() - out_size);
     while (i != end)
     {
         i->macd = outputs[0][x];
@@ -96,16 +96,16 @@ void Calculate::updateRsi(Instrument &instr)
     TI_REAL options[] = {20};
     TI_REAL *outputs[1];
 
-    const int out_size = NB_CANDLES - ti_rsi_start(options);
+    const int out_size = instr._candles.size() - ti_rsi_start(options);
 
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size);
     assert(outputs[0] != 0);
-    const int ret = ti_rsi(NB_CANDLES, inputs, options, outputs);
+    const int ret = ti_rsi(instr._candles.size(), inputs, options, outputs);
 
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
+    std::advance(i, instr._candles.size() - out_size);
     while (i != end)
     {
         i->rsi = outputs[0][x];
@@ -134,18 +134,18 @@ void Calculate::updateDi(Instrument &instr)
     TI_REAL options[] = {20};
     TI_REAL *outputs[2];
 
-    const int out_size = NB_CANDLES - ti_di_start(options);
+    const int out_size = instr._candles.size() - ti_di_start(options);
 
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size); /* plus_di */
     assert(outputs[0] != 0);
     outputs[1] = (double *)malloc(sizeof(TI_REAL) * out_size); /* minus_di */
     assert(outputs[1] != 0);
-    const int ret = ti_di(NB_CANDLES, inputs, options, outputs);
+    const int ret = ti_di(instr._candles.size(), inputs, options, outputs);
 std::cout << "di out size" << out_size << std::endl;
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
+    std::advance(i, instr._candles.size() - out_size);
     while (i != end)
     {
         i->plus_di = outputs[0][x];
@@ -174,16 +174,16 @@ void Calculate::updateAdx(Instrument &instr)
     TI_REAL options[] = {20};
     TI_REAL *outputs[1];
 
-    const int out_size = NB_CANDLES - ti_adx_start(options);
+    const int out_size = instr._candles.size() - ti_adx_start(options);
     std::cout << "adx out size" << out_size << std::endl;
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size); /* plus_di */
     assert(outputs[0] != 0);
-    const int ret = ti_adx(NB_CANDLES, inputs, options, outputs);
+    const int ret = ti_adx(instr._candles.size(), inputs, options, outputs);
 
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
-    std::advance(i, NB_CANDLES - out_size);
+    std::advance(i, instr._candles.size() - out_size);
     while (i != end)
     {
         i->adx = outputs[0][x];
