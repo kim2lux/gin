@@ -179,9 +179,12 @@ int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false, bo
     //const candle &prelast = i._candles.back();
 
     //if (last.adx > 21 && last.plus_di > last.minus_di && last.adx >  prelast->adx)
-    if (last.rsi < 22)
+    if (last.rsi < 24)
     {
-        double totalBuy = 15 / last.close;
+        double totalBuy = 0;
+        totalBuy = _wallet.getMinimumOrderSize(i._v1name, _v1);
+        if (totalBuy == 0)
+            totalBuy = 15 / last.close;
 
         std::cout << "BUYING POSITION: size: "
                   << totalBuy << " price: "
@@ -235,6 +238,9 @@ int Position::shortPosition(Instrument &i, Wallet &wallet, bool simu = false, bo
     {
         if (simu == false && backtest == false)
         {
+            _v1.cancelOrder(i.orderSellId);
+            logPosition("Cancel Limit sell for market sell => ID:" + to_string(i.orderSellId));
+            sleep(1);
             shortOrder(i);
             logSell("Real ** Loosing sell: ", i, last, *end);
         }

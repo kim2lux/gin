@@ -11,4 +11,5 @@ public:
 
 public:
   int update(BfxAPI::BitfinexAPI &v1);
+  double getMinimumOrderSize(std::string &, BfxAPI::BitfinexAPI &);
 };
