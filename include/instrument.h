@@ -28,6 +28,14 @@ public:
 
   CandleInterface &_icandle;
 
+  //wallet
+
+  double _available;
+  double _amount;
+  int updateWallet();
+
+  //order
+
   void initOrder(std::string json);
   void loadCandleFromAll();
   void updateFromAll();
@@ -53,7 +61,6 @@ public:
 
   double orderSellPrice;
   double orderSellSize;
-
 
   double originalBuyAmount;
   double executedBuyAmount;

@@ -45,12 +45,15 @@ int Position::makeSellOrder(Instrument &instr, double totalBuy)
     const candle &last = instr._candles.back();
     const std::time_t ts = last.timestamp / 1000;
     std::cout << std::ctime(&ts) << std::endl;
+    double tosell = instr._available;
+    if (instr._available < instr.executedBuyAmount)
+        tosell = instr.executedBuyAmount;
     _v1.newOrder(instr._v1name,
                  //instr.executedBuyAmount,
-                 instr.executedBuyAmount,
+                 tosell,
                  //instr.averageBuyPrice * 1.03,
-                 instr.averageBuyPrice * 1.005,
-                 "buy",
+                 instr.averageBuyPrice * 1.004,
+                 "sell",
                  "exchange limit",
                  false,
                  true,
@@ -97,6 +100,7 @@ int Position::makeOrder(Instrument &instr, double totalBuy)
             return (-1);
         logPosition(std::string(std::string(ctime(&ts)) + " - Buy order OK: " + _v1.strResponse() + " " + instr._v1name + " Current Price: " + std::to_string(last.close)));
         sleep(1);
+        instr.updateWallet();
         if (makeSellOrder(instr, totalBuy) == -1)
         {
             logPosition("Buy OK, Error SELL");
@@ -175,7 +179,7 @@ int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false, bo
     //const candle &prelast = i._candles.back();
 
     //if (last.adx > 21 && last.plus_di > last.minus_di && last.adx >  prelast->adx)
-    if (last.rsi < 20)
+    if (last.rsi < 22)
     {
         double totalBuy = 15 / last.close;
 

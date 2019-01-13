@@ -60,7 +60,6 @@ void Instrument::initOrder(std::string json)
     {
         if (strcmp(it["symbol"].GetString(), _v1name.c_str()) == 0)
         {
-            std::cout << "Found symbol order: " << it["symbol"].GetString() << std::endl;
             if (strcmp(it["side"].GetString(), "buy") == 0)
             {
                 orderBuyId = it["id"].GetDouble();
@@ -68,11 +67,6 @@ void Instrument::initOrder(std::string json)
                 executedBuyAmount = atof(it["executed_amount"].GetString());
                 originalBuyAmount = atof(it["original_amount"].GetString());
                 averageBuyPrice = atof(it["avg_execution_price"].GetString());
-                std::cout << "Active Buy orderId : " << orderBuyId
-                          << " original amount: " << originalBuyAmount
-                          << " executed amount:" << executedBuyAmount
-                          << " averageBuyPrice " << averageBuyPrice
-                          << " price buy: " << orderBuyPrice << std::endl;
             }
             else if (strcmp(it["side"].GetString(), "sell") == 0)
             {
@@ -80,11 +74,6 @@ void Instrument::initOrder(std::string json)
                 orderSellPrice = atof(it["price"].GetString());
                 executedSellAmount = atof(it["executed_amount"].GetString());
                 originalSellAmount = atof(it["original_amount"].GetString());
-                std::cout << "Active: Sell orderId : " << orderBuyId
-                          << "Order Sell Price " << orderSellPrice
-                          << " original amount: " << originalSellAmount
-                          << " executed amount:" << executedSellAmount
-                          << " price buy: " << orderBuyPrice << std::endl;
             }
         }
     }
@@ -179,6 +168,37 @@ int Instrument::setSellOrder(std::string response, const candle &last, double to
     return (0);
 }
 
+int Instrument::updateWallet()
+{
+    
+    _apiv1.getBalances();
+    if (_apiv1.hasApiError() != 0)
+    {
+        std::cerr << "error retrieving wallet" << std::endl;
+        return (-1);
+    }
+    Document document;
+    document.Parse(_apiv1.strResponse().c_str());
+    Value &data = document;
+    std::cout << _apiv1.strResponse() << std::endl;
+
+    for (auto &it : data.GetArray())
+    {
+        assert(it.HasMember("currency"));
+        std::cout << "currency check" << it["currency"].GetString() << std::endl;
+        if (strncmp(it["currency"].GetString(), this->_v1name.c_str(), 3) == 0)
+        {
+            assert(it.HasMember("available"));
+            _available = atof(it["available"].GetString());
+            assert(it.HasMember("amount"));
+            _amount = atof(it["amount"].GetString());
+            logPosition("Available Amout to sell: " + to_string(_available));
+        }
+    }
+    return (0);
+}
+
+
 int Instrument::setBuyOrder(std::string response, const candle &last, double totalBuy)
 {
     Document document;
@@ -202,7 +222,8 @@ int Instrument::setBuyOrder(std::string response, const candle &last, double tot
 
         position = true;
     }
-    while (originalBuyAmount > executedBuyAmount)
+    int i = 0;
+    while (originalBuyAmount > executedBuyAmount && i < 5)
     {
         sleep(1);
         std::cout << "Waiting order to be executed: " << std::endl;
@@ -223,6 +244,7 @@ int Instrument::setBuyOrder(std::string response, const candle &last, double tot
             executedBuyAmount = atof(data["executed_amount"].GetString());
             averageBuyPrice = atof(data["avg_execution_price"].GetString());
         }
+        i++;
     }
     return (0);
 }
