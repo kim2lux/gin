@@ -33,14 +33,37 @@ public:
   void updateFromAll();
   void updateCandles(bool replay = false, const char *filepath = nullptr);
   void clearOrder();
-  void setOrder(std::string response, const candle &last, double totalBuy);
+
+  int setBuyOrder(std::string response, const candle &last, double totalBuy);
+  int setSellOrder(std::string response, const candle &last, double totalBuy);
+
+  void clearBuyOrder();
+  void clearSellOrder();
+
   void display();
 
   bool position = false;
   bool backTest = false;
-  int64_t orderId;
-  double orderPrice;
-  double orderSize;
-  double originalAmount;
-  double executedAmount;
+
+  int64_t orderBuyId;
+  int64_t orderSellId;
+
+  double orderBuyPrice;
+  double orderBuySize;
+
+  double orderSellPrice;
+  double orderSellSize;
+
+
+  double originalBuyAmount;
+  double executedBuyAmount;
+
+  double originalSellAmount;
+  double executedSellAmount;
+
+  double averageBuyPrice;
+  double averageSellPrice;
+
+  double buyTimestamp;
+  double sellTimestamp;
 };

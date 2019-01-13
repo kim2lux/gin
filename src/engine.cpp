@@ -102,6 +102,30 @@ int Engine::retrieveInstrument()
     return 0;
 }
 
+int Engine::isVolume(std::string v1name, int minVolume)
+{
+    sleep(3);
+    std::cout << "retrieve volume: " << v1name << std::endl;
+    _api.v1.getTicker(v1name);
+    if (_api.v1.hasApiError())
+    {
+        std::cout << "Error retrieving volume" << _api.v1.strResponse() << std::endl;
+        return (-1);
+    }
+    else
+    {
+        std::cout << _api.v1.strResponse() << std::endl;
+        Document document;
+        document.Parse(_api.v1.strResponse().c_str());
+        Value &data = document;
+        double volume = atof(data["volume"].GetString());
+        std::cout << "instr: " << v1name << " volume: " << volume << std::endl;
+        if (volume > minVolume)
+            return (0);
+    }
+    return (-1);
+}
+
 int Engine::loadInstrument()
 {
     retrieveInstrument();
@@ -109,6 +133,7 @@ int Engine::loadInstrument()
     {
         for (auto &i : _instruments)
         {
+            //if (isVolume(i.first, 5000) == 0)
             vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
         }
     }
@@ -136,7 +161,19 @@ int Engine::loadInstrument()
 
 int Engine::makeOrders(Instrument &instr)
 {
-    if (instr._candles.size() <= 50)
+    candle &last = instr._candles.back();
+
+    time_t now = time(0);
+
+    uint64_t seconds = difftime(now, 0);
+    uint64_t lastCandle = last.timestamp / 1000;
+
+    if (lastCandle + 36000 < seconds) {
+        std::cout << instr._v1name << ": Candle too old" << std::endl;
+        return (-1);
+    }
+
+    if (instr._candles.size() <= 25)
     {
         std::cout << "Candles not loaded !" << std::endl;
         if (_config.simuMode == false)
@@ -156,7 +193,7 @@ int Engine::makeOrders(Instrument &instr)
         _calc.updateDi(instr);
         _calc.updateAdx(instr);
         instr.display();
-        if (instr.orderId == 0)
+        if (instr.orderSellId == 0 && instr.orderBuyId == 0)
             _position.makePosition(instr, _wallet, _config.simuMode, _config.backTest);
         else
         {
@@ -181,7 +218,7 @@ int Engine::updateInstrument(Instrument &instr)
 
         instr._totalCandles = std::move(_candleInterface.retrieveCandles(instr, nullptr, 5000));
         std::cout << "total candle loaded" << std::endl;
-        if (instr._totalCandles.size() < 100)
+        if (instr._totalCandles.size() < 500)
         {
             std::cout << "total candle too small" << std::endl;
             sleep(10);
@@ -225,13 +262,13 @@ void Engine::run()
         }
         for (auto &instr : vInstr)
         {
+            instr.clearOrder();
             instr.initOrder(_api.v1.strResponse());
         }
     }
     for (auto &instr : vInstr)
     {
         instr.backTest = _config.backTest;
-        std::cout << "instr test" << std::endl;
         try
         {
             if (updateInstrument(instr) != 0)
@@ -252,7 +289,7 @@ void Engine::run()
             std::cout << "Unknown failure occurred" << std::endl;
             return;
         }
-        std::cout << std::fixed << std::setprecision(9) << "Total: " << std::endl;
+        std::cout << std::fixed << std::setprecision(9) << "Total: " << totalDiff << std::endl;
     }
     if (_config.simuMode == true || _config.backTest == true)
         exit(0);

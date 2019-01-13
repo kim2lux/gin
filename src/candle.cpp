@@ -65,6 +65,7 @@ std::list<candle> CandleInterface::pushCandles(std::string json)
                             it[5].GetDouble()});
     }
     std::cout << candles.size() << std::endl;
+    return (candles);
 }
 
 std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char *filepath, uint32_t nbCandles)
@@ -99,7 +100,7 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
     {
         std::string nbcand(to_string(nbCandles));
         std::string request("/candles/trade:" + candleGapTime + ":t" + instr._v2name + "/hist?limit=" + nbcand + "&sort=1");
-        std::cout << "request => " << request << std::endl;
+        //        std::cout << "request => " << request << std::endl;
         _bfxApi.Request.get(request);
 
         if (_bfxApi.Request.getLastStatusCode() != CURLE_OK)
@@ -109,7 +110,6 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
             throw;
             return (std::list<candle>());
         }
-        std::cout << _bfxApi.strResponse() << std::endl;
         save(_bfxApi.strResponse(), instr._v1name);
         return (pushCandles(_bfxApi.strResponse()));
     }

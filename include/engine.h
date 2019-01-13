@@ -31,7 +31,7 @@ public:
   Calculate _calc;
   Position _position;
   CandleInterface _candleInterface;
-  std::vector<std::pair<std::string, std::string> > _instruments;
+  std::vector<std::pair<std::string, std::string>> _instruments;
   std::vector<Instrument> vInstr;
   Wallet _wallet;
   std::vector<std::string> _simuCandles;
@@ -42,4 +42,5 @@ public:
   int updateInstrument(Instrument &instr);
   int initSimuCandles(Instrument &instr);
   int makeOrders(Instrument &instr);
+  int isVolume(std::string v1name, int minVolume);
 };

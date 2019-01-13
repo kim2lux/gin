@@ -141,7 +141,6 @@ void Calculate::updateDi(Instrument &instr)
     outputs[1] = (double *)malloc(sizeof(TI_REAL) * out_size); /* minus_di */
     assert(outputs[1] != 0);
     const int ret = ti_di(instr._candles.size(), inputs, options, outputs);
-std::cout << "di out size" << out_size << std::endl;
     auto i = instr._candles.begin();
     auto end = instr._candles.end();
     uint32_t x = 0;
@@ -175,7 +174,6 @@ void Calculate::updateAdx(Instrument &instr)
     TI_REAL *outputs[1];
 
     const int out_size = instr._candles.size() - ti_adx_start(options);
-    std::cout << "adx out size" << out_size << std::endl;
     outputs[0] = (double *)malloc(sizeof(TI_REAL) * out_size); /* plus_di */
     assert(outputs[0] != 0);
     const int ret = ti_adx(instr._candles.size(), inputs, options, outputs);
