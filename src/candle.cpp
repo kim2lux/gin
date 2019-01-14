@@ -107,7 +107,6 @@ std::list<candle> CandleInterface::retrieveCandles(Instrument &instr, const char
         {
             std::cout << "error retrieving candles" << std::endl;
             sleep(10);
-            throw;
             return (std::list<candle>());
         }
         save(_bfxApi.strResponse(), instr._v1name);

@@ -20,7 +20,7 @@ double Wallet::getMinimumOrderSize(std::string &v1name, BfxAPI::BitfinexAPI &v1)
         if (strcmp(it["pair"].GetString(), v1name.c_str()) == 0)
         {
             std::cout << "found minimum size !" << std::endl;
-            orderSize = it["minimum_order_size"].GetDouble();
+            orderSize = atof(it["minimum_order_size"].GetString());
         }
     }
     return (orderSize);

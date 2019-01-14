@@ -304,14 +304,14 @@ Engine::Engine(Config &config) : _config(config), _api(config), _position(_api.v
         exit(0);
     }
 
-    if (_wallet.update(_api.v1) != 0)
+    while (_wallet.update(_api.v1) != 0)
     {
         std::cout << "Cannot initialize wallet" << std::endl;
-        exit(0);
+        sleep(10);
     }
-    if (loadInstrument() != 0)
+    while (loadInstrument() != 0)
     {
         std::cout << "Cannot initialize instrument" << std::endl;
-        exit(0);
+        sleep(10);
     }
 }

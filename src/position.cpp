@@ -80,7 +80,7 @@ int Position::makeOrder(Instrument &instr, double totalBuy)
     const std::time_t ts = last.timestamp / 1000;
     std::cout << std::ctime(&ts) << std::endl;
     _v1.newOrder(instr._v1name,
-                 totalBuy,
+                 totalBuy * 1.02,
                  last.close,
                  "buy",
                  "exchange market",
@@ -101,6 +101,8 @@ int Position::makeOrder(Instrument &instr, double totalBuy)
         logPosition(std::string(std::string(ctime(&ts)) + " - Buy order OK: " + _v1.strResponse() + " " + instr._v1name + " Current Price: " + std::to_string(last.close)));
         sleep(1);
         instr.updateWallet();
+        double totalBuy = 0;
+        totalBuy = _wallet.getMinimumOrderSize(instr._v1name, _v1);
         if (makeSellOrder(instr, totalBuy) == -1)
         {
             logPosition("Buy OK, Error SELL");
@@ -178,13 +180,10 @@ int Position::makePosition(Instrument &i, Wallet &_wallet, bool simu = false, bo
     //i._candles.pop_back();
     //const candle &prelast = i._candles.back();
 
+    double totalBuy = 15 / last.close;
     //if (last.adx > 21 && last.plus_di > last.minus_di && last.adx >  prelast->adx)
     if (last.rsi < 24)
     {
-        double totalBuy = 0;
-        totalBuy = _wallet.getMinimumOrderSize(i._v1name, _v1);
-        if (totalBuy == 0)
-            totalBuy = 15 / last.close;
 
         std::cout << "BUYING POSITION: size: "
                   << totalBuy << " price: "
