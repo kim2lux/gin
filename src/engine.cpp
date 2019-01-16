@@ -129,11 +129,13 @@ int Engine::isVolume(std::string v1name, int minVolume)
 int Engine::loadInstrument()
 {
     retrieveInstrument();
+    //isVolume(5000);
     if (_config.simuMode == false)
     {
         for (auto &i : _instruments)
         {
-            //if (isVolume(i.first, 5000) == 0)
+            std::cout << i.first << std::endl;
+            //
             vInstr.push_back({i.first, i.second, _api.v2, _api.v1, _candleInterface, _api.v1.strResponse()});
         }
     }
@@ -168,7 +170,7 @@ int Engine::makeOrders(Instrument &instr)
     uint64_t seconds = difftime(now, 0);
     uint64_t lastCandle = last.timestamp / 1000;
 
-    if (lastCandle + 36000 < seconds) {
+    if (lastCandle + 36000 < seconds && _config.backTest == false) {
         std::cout << instr._v1name << ": Candle too old" << std::endl;
         return (-1);
     }
@@ -193,7 +195,7 @@ int Engine::makeOrders(Instrument &instr)
         _calc.updateDi(instr);
         _calc.updateAdx(instr);
         instr.display();
-        if (instr.orderSellId == 0 && instr.orderBuyId == 0)
+        if (instr.orderBuyId == 0 && instr.orderSellId == 0)
             _position.makePosition(instr, _wallet, _config.simuMode, _config.backTest);
         else
         {

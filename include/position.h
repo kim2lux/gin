@@ -19,4 +19,5 @@ public:
   int shortPosition(Instrument &i, Wallet &, bool, bool);
   int isMacdReducing(const candle &last, const candle &prelast, bool sell);
   int makeSellOrder(Instrument &instr, double totalBuy);
+  int isPositionOk(Instrument & instr, double totalBuy, const std::time_t & ts);
 };

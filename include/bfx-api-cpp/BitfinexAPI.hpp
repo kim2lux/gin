@@ -171,8 +171,8 @@ namespace BfxAPI
         };
 
         BitfinexAPI& getOrderBook(const string &symbol,
-                                  const unsigned &limit_bids = 50,
-                                  const unsigned &limit_asks = 50,
+                                  const unsigned &limit_bids = 1,
+                                  const unsigned &limit_asks = 1,
                                   const bool &group = true)
         {
             if (!inArray(symbol, symbols_))

@@ -170,7 +170,7 @@ int Instrument::setSellOrder(std::string response, const candle &last, double to
 
 int Instrument::updateWallet()
 {
-    
+
     _apiv1.getBalances();
     if (_apiv1.hasApiError() != 0)
     {
@@ -197,7 +197,6 @@ int Instrument::updateWallet()
     }
     return (0);
 }
-
 
 int Instrument::setBuyOrder(std::string response, const candle &last, double totalBuy)
 {
@@ -246,7 +245,10 @@ int Instrument::setBuyOrder(std::string response, const candle &last, double tot
         }
         i++;
     }
-    return (0);
+    if (i >= 4)
+        return (-1);
+    else
+        return (0);
 }
 
 void Instrument::clearOrder()

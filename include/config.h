@@ -14,25 +14,26 @@ const std::string candleGapTime("1m");
 const std::string candleNumber("100");
 
 static std::pair<std::string, std::string> instruments[] = {
-    std::make_pair("ltcbtc", "tLTCBTC"),
-    std::make_pair("iotbtc", "tIOTBTC"),
-    std::make_pair("xrpbtc", "tXRPBTC"),
-    std::make_pair("xmrbtc", "tXMRBTC"),
-    std::make_pair("neobtc", "tNEOBTC"),
-    std::make_pair("babbtc", "tBABBTC"),
-    std::make_pair("bsvbtc", "tBSVBTC"),
-    std::make_pair("dshbtc", "tDSHBTC"),
-    std::make_pair("ethbtc", "tETHBTC"),
-    std::make_pair("omgbtc", "tOMGBTC"),
-    std::make_pair("xlmbtc", "tXLMBTC"),
-    std::make_pair("lymbtc", "tLYMBTC"),
-    std::make_pair("repbtc", "tREPBTC"),
-    std::make_pair("eosbtc", "tEOSBTC"),
-    std::make_pair("seebtc", "tSEEBTC"),
-    std::make_pair("vetbtc", "tVETBTC"),
-    std::make_pair("dgbbtc", "tDGBBTC"),
-    std::make_pair("funbtc", "tFUNBTC"),
-    std::make_pair("xtzbtc", "tXTZBTC")};
+    std::make_pair("trxusd", "tTRXUSD"),
+    std::make_pair("xrpusd", "tXRPUSD"),
+    std::make_pair("iotusd", "tIOTUSD"),
+    std::make_pair("eosusd", "tEOSUSD"),
+    std::make_pair("vetusd", "tVETUSD"),
+    std::make_pair("dtausd", "tDTAUSD"),
+    std::make_pair("cnnusd", "tCNNUSD"),
+    std::make_pair("funusd", "tFUNUSD"),
+    std::make_pair("xmlusd", "tXLMUSD"),
+    std::make_pair("mitusd", "tMITUSD"),
+    std::make_pair("intusd", "tINTUSD"),
+    std::make_pair("mgousd", "tMGOUSD"),
+    std::make_pair("xvgusd", "tXVGUSD"),
+    std::make_pair("neousd", "tNEOUSD"),
+    std::make_pair("ethusd", "tETHUSD"),
+    std::make_pair("etcusd", "tETCUSD"),
+    std::make_pair("zrxusd", "tZRXUSD"),
+    std::make_pair("paiusd", "tPAIUSD"),
+    std::make_pair("omgusd", "tOMGUSD")
+    };
 
 
 class Config
